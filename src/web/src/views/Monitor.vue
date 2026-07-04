@@ -13,6 +13,7 @@ import { useToast } from 'primevue/usetoast'
 const { t } = useI18n()
 const toast = useToast()
 const snap = ref(null)
+const settings = ref(null)
 const elapsed = ref(0)
 let conn = null
 let timer = null
@@ -71,7 +72,10 @@ async function start() {
   }, 1000)
 }
 
-onMounted(start)
+onMounted(async () => {
+  start()
+  try { settings.value = (await api.get('/settings')).data } catch { /* ignore */ }
+})
 onUnmounted(() => { if (timer) clearInterval(timer); conn?.stop() })
 
 async function skip() { await api.post('/stream/skip') }
@@ -82,8 +86,11 @@ const schedulerEnabled = computed({
   set: (v) => { if (snap.value) snap.value.schedulerEnabled = v; toggleScheduler(v) },
 })
 
-const streamUrl = computed(() => snap.value
-  ? `http://${location.hostname}:8000/stream` : '')
+const streamUrl = computed(() => {
+  if (!snap.value) return ''
+  const override = settings.value?.publicStreamUrl?.trim()
+  return override || `http://${location.hostname}:8000/stream`
+})
 
 // Listen: minimal custom player (play/pause + volume). No seek bar — a livestream has no position.
 const audioEl = ref(null)

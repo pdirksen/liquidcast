@@ -26,6 +26,7 @@ public static class SettingsEndpoints
             s.StreamName = dto.StreamName;
             s.StreamDescription = dto.StreamDescription;
             s.Bitrate = dto.Bitrate;
+            s.PublicStreamUrl = string.IsNullOrWhiteSpace(dto.PublicStreamUrl) ? null : dto.PublicStreamUrl.Trim();
             s.IcecastAdminUser = dto.IcecastAdminUser;
             s.IcecastAdminPassword = dto.IcecastAdminPassword;
             s.DefaultCrossfadeSec = dto.DefaultCrossfadeSec;

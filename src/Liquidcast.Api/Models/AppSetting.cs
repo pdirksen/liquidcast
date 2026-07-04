@@ -27,6 +27,10 @@ public class AppSetting
     public string StreamName { get; set; } = "Liquidcast";
     public string StreamDescription { get; set; } = "Powered by Liquidcast";
     public int Bitrate { get; set; } = 128;
+    /// <summary>Overrides the listener-facing stream URL shown/played on the Monitor page.
+    /// Null/blank falls back to the browser-derived default (host + Icecast port + mount) —
+    /// set this when a reverse proxy fronts the stream on a different host/port/path.</summary>
+    public string? PublicStreamUrl { get; set; }
 
     // Icecast admin (for listener stats)
     public string IcecastAdminUser { get; set; } = "admin";

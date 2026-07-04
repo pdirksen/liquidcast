@@ -87,7 +87,10 @@ async function save() {
                 <label>{{ t('settings.bitrate') }}</label><InputNumber v-model="s.bitrate" :useGrouping="false" />
                 <label>{{ t('settings.streamName') }}</label><InputText v-model="s.streamName" />
                 <label>{{ t('settings.description') }}</label><InputText v-model="s.streamDescription" />
+                <label>{{ t('settings.publicStreamUrl') }}</label>
+                <InputText v-model="s.publicStreamUrl" placeholder="https://radio.example.com/stream" />
               </div>
+              <p class="muted" style="font-size:.82rem">{{ t('settings.publicStreamUrlHint') }}</p>
             </section>
             <section class="card">
               <h3>{{ t('settings.icecastAdmin') }}</h3>
