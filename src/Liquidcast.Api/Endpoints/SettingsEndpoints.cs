@@ -25,6 +25,7 @@ public static class SettingsEndpoints
             s.IcecastMount = dto.IcecastMount;
             s.StreamName = dto.StreamName;
             s.StreamDescription = dto.StreamDescription;
+            s.Genre = string.IsNullOrWhiteSpace(dto.Genre) ? "Various" : dto.Genre.Trim();
             s.Bitrate = dto.Bitrate;
             s.PublicStreamUrl = string.IsNullOrWhiteSpace(dto.PublicStreamUrl) ? null : dto.PublicStreamUrl.Trim();
             s.IcecastAdminUser = dto.IcecastAdminUser;

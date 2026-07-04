@@ -26,6 +26,7 @@ public class AppSetting
     public string IcecastMount { get; set; } = "/stream";
     public string StreamName { get; set; } = "Liquidcast";
     public string StreamDescription { get; set; } = "Powered by Liquidcast";
+    public string Genre { get; set; } = "Various";
     public int Bitrate { get; set; } = 128;
     /// <summary>Overrides the listener-facing stream URL shown/played on the Monitor page.
     /// Null/blank falls back to the browser-derived default (host + Icecast port + mount) —

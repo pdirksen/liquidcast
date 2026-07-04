@@ -97,6 +97,7 @@ public class ScriptGenerator
         sb.AppendLine($"  %ffmpeg(format=\"mp3\", %audio(codec=\"libmp3lame\", b=\"{s.Bitrate}k\")),");
         sb.AppendLine($"  host={Q(s.IcecastHost)}, port={s.IcecastPort}, password={Q(s.IcecastPassword)},");
         sb.AppendLine($"  mount={Q(s.IcecastMount)}, name={Q(s.StreamName)}, description={Q(s.StreamDescription)},");
+        sb.AppendLine($"  genre={Q(s.Genre)},");
         sb.AppendLine("  fallible=false,");
         sb.AppendLine("  radio)");
 

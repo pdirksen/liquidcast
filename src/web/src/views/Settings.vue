@@ -26,6 +26,15 @@ const playlists = ref([])
 const saving = ref(false)
 const tab = ref('stream')
 
+// Standard Shoutcast/Icecast directory genres, sent verbatim in the ICY genre header.
+const GENRES = [
+  'Various', 'Alternative', 'Ambient', 'Blues', 'Chillout', 'Classical', 'Country',
+  'Dance', 'Disco', 'Downtempo', 'Drum & Bass', 'Easy Listening', 'Electronic', 'Folk',
+  'Funk', 'Gospel', 'Hard Rock', 'Hip Hop', 'House', 'Indie', 'Jazz', 'Latin', 'Lounge',
+  'Metal', 'News', 'Oldies', 'Pop', 'Punk', 'R&B', 'Reggae', 'Rock', 'Salsa', 'Ska',
+  'Soul', 'Sports', 'Talk', 'Techno', 'Trance', 'World',
+].map((g) => ({ label: g, value: g }))
+
 const fallbackModes = computed(() => [
   { label: t('settings.silence'), value: 0 },
   { label: t('settings.fallbackPlaylistOpt'), value: 1 },
@@ -87,6 +96,9 @@ async function save() {
                 <label>{{ t('settings.bitrate') }}</label><InputNumber v-model="s.bitrate" :useGrouping="false" />
                 <label>{{ t('settings.streamName') }}</label><InputText v-model="s.streamName" />
                 <label>{{ t('settings.description') }}</label><InputText v-model="s.streamDescription" />
+                <label>{{ t('settings.genre') }}</label>
+                <Select v-model="s.genre" :options="GENRES" optionLabel="label" optionValue="value"
+                  filter :filterPlaceholder="t('common.search')" editable />
                 <label>{{ t('settings.publicStreamUrl') }}</label>
                 <InputText v-model="s.publicStreamUrl" placeholder="https://radio.example.com/stream" />
               </div>
