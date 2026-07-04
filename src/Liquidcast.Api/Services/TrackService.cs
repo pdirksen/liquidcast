@@ -55,6 +55,13 @@ public class TrackService
         File.Move(tmp, finalPath, overwrite: false);
 
         var meta = ReadMetadata(finalPath);
+        if (meta.DurationSec <= 0)
+        {
+            // ATL couldn't decode any audio frames — not a real MP3 despite the extension.
+            File.Delete(finalPath);
+            throw new InvalidOperationException("File is not a valid MP3.");
+        }
+
         var track = new Track
         {
             FileName = safeName,

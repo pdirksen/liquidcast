@@ -62,7 +62,9 @@ const messages = {
       dataPath: 'Data path', tcpMode: 'TCP telnet (Windows)',
       unixMode: 'Unix socket (Linux)', saved: 'Settings saved', restarting: 'Liquidsoap restarting…',
       saveFailed: 'Save failed', display: 'Display', dateFormat: 'Date & time format',
-      tabStream: 'Stream', tabPlayback: 'Playback', tabSystem: 'System', tabBackup: 'Backup' },
+      tabStream: 'Stream', tabPlayback: 'Playback', tabSystem: 'System', tabBackup: 'Backup',
+      uploadsSecurity: 'Uploads & security', maxUploadSizeMb: 'Max upload size (MB)',
+      loginRateLimitPermit: 'Login attempts allowed', loginRateLimitWindowSec: 'Per window (s)' },
     backup: {
       schedule: 'Scheduled backups', enabled: 'Enable daily backup', targetPath: 'Target folder',
       time: 'Time (HH:MM)', keep: 'Keep last N', scheduleHint: 'Runs daily at the set time while the app is running. Backs up the database only.',
@@ -133,7 +135,9 @@ const messages = {
       dataPath: 'Datenpfad', tcpMode: 'TCP-Telnet (Windows)',
       unixMode: 'Unix-Socket (Linux)', saved: 'Einstellungen gespeichert', restarting: 'Liquidsoap startet neu…',
       saveFailed: 'Speichern fehlgeschlagen', display: 'Anzeige', dateFormat: 'Datums- und Zeitformat',
-      tabStream: 'Stream', tabPlayback: 'Wiedergabe', tabSystem: 'System', tabBackup: 'Backup' },
+      tabStream: 'Stream', tabPlayback: 'Wiedergabe', tabSystem: 'System', tabBackup: 'Backup',
+      uploadsSecurity: 'Uploads & Sicherheit', maxUploadSizeMb: 'Max. Upload-Größe (MB)',
+      loginRateLimitPermit: 'Erlaubte Login-Versuche', loginRateLimitWindowSec: 'Pro Zeitfenster (s)' },
     backup: {
       schedule: 'Geplante Backups', enabled: 'Tägliches Backup aktivieren', targetPath: 'Zielordner',
       time: 'Uhrzeit (HH:MM)', keep: 'Letzte N behalten', scheduleHint: 'Läuft täglich zur eingestellten Zeit, solange die App läuft. Sichert nur die Datenbank.',
@@ -204,7 +208,9 @@ const messages = {
       dataPath: 'Ruta de datos', tcpMode: 'Telnet TCP (Windows)',
       unixMode: 'Socket Unix (Linux)', saved: 'Ajustes guardados', restarting: 'Reiniciando Liquidsoap…',
       saveFailed: 'Error al guardar', display: 'Visualización', dateFormat: 'Formato de fecha y hora',
-      tabStream: 'Stream', tabPlayback: 'Reproducción', tabSystem: 'Sistema', tabBackup: 'Backup' },
+      tabStream: 'Stream', tabPlayback: 'Reproducción', tabSystem: 'Sistema', tabBackup: 'Backup',
+      uploadsSecurity: 'Subidas y seguridad', maxUploadSizeMb: 'Tamaño máx. de subida (MB)',
+      loginRateLimitPermit: 'Intentos de inicio de sesión permitidos', loginRateLimitWindowSec: 'Por ventana (s)' },
     backup: {
       schedule: 'Copias programadas', enabled: 'Activar copia diaria', targetPath: 'Carpeta destino',
       time: 'Hora (HH:MM)', keep: 'Conservar últimas N', scheduleHint: 'Se ejecuta a diario a la hora fijada mientras la app está activa. Solo respalda la base de datos.',

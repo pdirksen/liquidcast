@@ -38,6 +38,9 @@ public static class SettingsEndpoints
             s.TelnetPort = dto.TelnetPort;
             s.LiquidsoapLogLevel = dto.LiquidsoapLogLevel;
             s.DataPath = dto.DataPath;
+            s.MaxUploadSizeMb = dto.MaxUploadSizeMb;
+            s.LoginRateLimitPermitLimit = dto.LoginRateLimitPermitLimit;
+            s.LoginRateLimitWindowSec = dto.LoginRateLimitWindowSec;
             await db.SaveChangesAsync();
 
             cfg.Update(s);

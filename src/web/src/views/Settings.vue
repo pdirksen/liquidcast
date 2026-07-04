@@ -144,6 +144,17 @@ async function save() {
                   :options="dateFormats" optionLabel="label" optionValue="code" />
               </div>
             </section>
+            <section class="card">
+              <h3>{{ t('settings.uploadsSecurity') }}</h3>
+              <div class="grid2">
+                <label>{{ t('settings.maxUploadSizeMb') }}</label>
+                <InputNumber v-model="s.maxUploadSizeMb" :min="1" :useGrouping="false" />
+                <label>{{ t('settings.loginRateLimitPermit') }}</label>
+                <InputNumber v-model="s.loginRateLimitPermitLimit" :min="1" :useGrouping="false" />
+                <label>{{ t('settings.loginRateLimitWindowSec') }}</label>
+                <InputNumber v-model="s.loginRateLimitWindowSec" :min="1" :useGrouping="false" />
+              </div>
+            </section>
           </div>
         </TabPanel>
 

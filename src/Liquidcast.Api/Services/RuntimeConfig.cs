@@ -29,6 +29,7 @@ public class RuntimeConfig
     public string ScriptPath => Path.Combine(DataPathAbsolute, "liquidcast.liq");
     public string SocketPath => Path.Combine(DataPathAbsolute, "liquidcast.sock");
     public string LogPath => Path.Combine(DataPathAbsolute, "liquidsoap.log");
+    public long MaxUploadBytes => (long)Settings.MaxUploadSizeMb * 1024 * 1024;
 
     public void EnsureDirectories()
     {

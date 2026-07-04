@@ -57,4 +57,9 @@ public class AppSetting
 
     // Storage
     public string DataPath { get; set; } = "data";
+
+    // Uploads / login security
+    public int MaxUploadSizeMb { get; set; } = 200;
+    public int LoginRateLimitPermitLimit { get; set; } = 5;
+    public int LoginRateLimitWindowSec { get; set; } = 60;
 }

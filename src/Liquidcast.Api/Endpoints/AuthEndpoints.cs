@@ -21,7 +21,7 @@ public static class AuthEndpoints
             if (user is null || !PasswordHasher.Verify(req.Password, user.PasswordHash))
                 return Results.Unauthorized();
 
-            var token = jwt.Create(user.Username);
+            var token = jwt.Create(user.Username, user.TokenVersion);
             http.Response.Cookies.Append(CookieName, token, new CookieOptions
             {
                 HttpOnly = true,
@@ -31,13 +31,25 @@ public static class AuthEndpoints
                 Path = "/",
             });
             return Results.Ok(new { username = user.Username });
-        });
+        }).RequireRateLimiting("login");
 
-        g.MapPost("/logout", (HttpContext http) =>
+        g.MapPost("/logout", async (HttpContext http, AppDbContext db) =>
         {
+            // Bump TokenVersion so every previously issued JWT for this user — not just
+            // the cookie being cleared here — fails validation from this point on.
+            var username = http.User.Identity?.Name;
+            if (username is not null)
+            {
+                var user = await db.AdminUsers.FirstOrDefaultAsync(u => u.Username == username);
+                if (user is not null)
+                {
+                    user.TokenVersion++;
+                    await db.SaveChangesAsync();
+                }
+            }
             http.Response.Cookies.Delete(CookieName);
             return Results.Ok();
-        });
+        }).RequireAuthorization();
 
         g.MapGet("/me", (HttpContext http) =>
             http.User.Identity?.IsAuthenticated == true

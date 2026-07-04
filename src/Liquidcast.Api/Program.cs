@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Liquidcast.Api.Data;
 using Liquidcast.Api.Endpoints;
 using Liquidcast.Api.Hubs;
@@ -68,10 +69,46 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     ctx.Request.Cookies.TryGetValue(AuthEndpoints.CookieName, out var c))
                     ctx.Token = c;
                 return Task.CompletedTask;
-            }
+            },
+            OnTokenValidated = async ctx =>
+            {
+                var username = ctx.Principal?.Identity?.Name;
+                var tvClaim = ctx.Principal?.FindFirst(JwtTokenService.TokenVersionClaim)?.Value;
+                if (username is null || !int.TryParse(tvClaim, out var tv))
+                {
+                    ctx.Fail("Missing token version claim.");
+                    return;
+                }
+                var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var user = await db.AdminUsers.AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Username == username);
+                if (user is null || user.TokenVersion != tv)
+                    ctx.Fail("Token has been revoked.");
+            },
         };
     });
 builder.Services.AddAuthorization();
+
+// Throttle login attempts per client IP (configurable via Settings), no queueing
+// (excess requests get 429 immediately rather than piling up). Limits read here
+// apply to newly-seen IPs / partitions; an IP already mid-window keeps the
+// limit that was active when its partition was created until it's recycled.
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.AddPolicy("login", httpContext =>
+    {
+        var s = httpContext.RequestServices.GetRequiredService<RuntimeConfig>().Settings;
+        return RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = s.LoginRateLimitPermitLimit,
+                Window = TimeSpan.FromSeconds(s.LoginRateLimitWindowSec),
+                QueueLimit = 0,
+            });
+    });
+});
 
 // Dev CORS for the Vite dev server.
 const string DevCors = "dev";
@@ -144,6 +181,7 @@ if (app.Environment.IsDevelopment())
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

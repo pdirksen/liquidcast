@@ -3,6 +3,7 @@ using System;
 using Liquidcast.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Liquidcast.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260704110758_AddAdminUserTokenVersion")]
+    partial class AddAdminUserTokenVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -102,15 +105,6 @@ namespace Liquidcast.Api.Migrations
                     b.Property<string>("LiquidsoapPath")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("LoginRateLimitPermitLimit")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("LoginRateLimitWindowSec")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MaxUploadSizeMb")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("StreamDescription")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -144,9 +138,6 @@ namespace Liquidcast.Api.Migrations
                             IcecastPassword = "hackme",
                             IcecastPort = 8000,
                             LiquidsoapLogLevel = 3,
-                            LoginRateLimitPermitLimit = 5,
-                            LoginRateLimitWindowSec = 60,
-                            MaxUploadSizeMb = 200,
                             StreamDescription = "Powered by Liquidcast",
                             StreamName = "Liquidcast",
                             TelnetPort = 1234

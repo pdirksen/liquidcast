@@ -1,5 +1,6 @@
 using Liquidcast.Api.Data;
 using Liquidcast.Api.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,10 +27,17 @@ public static class TrackEndpoints
             return Results.Ok(await query.OrderByDescending(t => t.UploadedAt).ToListAsync());
         });
 
-        g.MapPost("/upload", async (HttpRequest request, TrackService svc, CancellationToken ct) =>
+        g.MapPost("/upload", async (HttpRequest request, TrackService svc, RuntimeConfig cfg, CancellationToken ct) =>
         {
             if (!request.HasFormContentType)
                 return Results.BadRequest(new { error = "Expected multipart/form-data." });
+
+            var maxUploadBytes = cfg.MaxUploadBytes;
+            if (request.ContentLength > maxUploadBytes)
+                return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
+            var sizeFeature = request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            if (sizeFeature is { IsReadOnly: false })
+                sizeFeature.MaxRequestBodySize = maxUploadBytes;
 
             var form = await request.ReadFormAsync(ct);
             if (form.Files.Count == 0)

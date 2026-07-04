@@ -10,6 +10,7 @@ public class JwtTokenService
 {
     public const string Issuer = "liquidcast";
     public const string Audience = "liquidcast";
+    public const string TokenVersionClaim = "tv";
 
     private readonly SymmetricSecurityKey _key;
 
@@ -44,13 +45,14 @@ public class JwtTokenService
 
     public SymmetricSecurityKey Key => _key;
 
-    public string Create(string username)
+    public string Create(string username, int tokenVersion)
     {
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, username),
             new Claim(ClaimTypes.Name, username),
+            new Claim(TokenVersionClaim, tokenVersion.ToString()),
         };
         var token = new JwtSecurityToken(Issuer, Audience, claims,
             expires: DateTime.UtcNow.AddDays(7), signingCredentials: creds);
