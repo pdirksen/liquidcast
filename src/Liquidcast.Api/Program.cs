@@ -185,6 +185,9 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/api/version", () =>
+    Results.Ok(new { version = typeof(Program).Assembly.GetName().Version!.ToString(3) }));
+
 app.MapAuth();
 app.MapTracks();
 app.MapPlaylists();

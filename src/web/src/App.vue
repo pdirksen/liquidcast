@@ -7,6 +7,7 @@ import { LOCALES, setLocale } from './i18n'
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Select from 'primevue/select'
+import AccountMenu from './components/AccountMenu.vue'
 
 const auth = useAuth()
 const router = useRouter()
@@ -53,7 +54,7 @@ async function logout() {
         </RouterLink>
       </nav>
       <div class="spacer" />
-      <span class="muted" style="margin-right:.75rem">{{ auth.user?.username }}</span>
+      <AccountMenu />
       <Select v-model="currentLocale" :options="locales" optionValue="code" class="lang">
         <template #value="{ value }">
           <img v-if="value" :src="flagSrc(value)" :alt="value" class="flag" />

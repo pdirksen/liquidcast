@@ -75,6 +75,13 @@ const messages = {
       confirm: 'Restore this backup? It overwrites the current database.',
       runSuccess: 'Backup created', runFailed: 'Backup failed',
       restoreSuccess: 'Backup restored', restoreFailed: 'Restore failed', saved: 'Backup settings saved' },
+    account: {
+      changeProfile: 'Change profile', changeCredentials: 'Change password', about: 'About',
+      currentPassword: 'Current password', newUsername: 'New username', newPassword: 'New password',
+      confirmPassword: 'Confirm password', profileUpdated: 'Profile updated',
+      credentialsUpdated: 'Password changed', passwordMismatch: 'Passwords do not match',
+      updateFailed: 'Update failed', version: 'version', license: 'License',
+      mustChangePassword: "You're signed in with the initial password — set a new one to continue." },
   },
   de: {
     common: { save: 'Speichern', cancel: 'Abbrechen', delete: 'Löschen', create: 'Erstellen',
@@ -148,6 +155,13 @@ const messages = {
       confirm: 'Dieses Backup wiederherstellen? Die aktuelle Datenbank wird überschrieben.',
       runSuccess: 'Backup erstellt', runFailed: 'Backup fehlgeschlagen',
       restoreSuccess: 'Backup wiederhergestellt', restoreFailed: 'Wiederherstellung fehlgeschlagen', saved: 'Backup-Einstellungen gespeichert' },
+    account: {
+      changeProfile: 'Profil ändern', changeCredentials: 'Passwort ändern', about: 'Über',
+      currentPassword: 'Aktuelles Passwort', newUsername: 'Neuer Benutzername', newPassword: 'Neues Passwort',
+      confirmPassword: 'Passwort bestätigen', profileUpdated: 'Profil aktualisiert',
+      credentialsUpdated: 'Passwort geändert', passwordMismatch: 'Passwörter stimmen nicht überein',
+      updateFailed: 'Aktualisierung fehlgeschlagen', version: 'Version', license: 'Lizenz',
+      mustChangePassword: 'Du bist mit dem ursprünglichen Passwort angemeldet — lege ein neues fest, um fortzufahren.' },
   },
   es: {
     common: { save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar', create: 'Crear',
@@ -221,6 +235,13 @@ const messages = {
       confirm: '¿Restaurar esta copia? Sobrescribe la base de datos actual.',
       runSuccess: 'Copia creada', runFailed: 'Error en la copia',
       restoreSuccess: 'Copia restaurada', restoreFailed: 'Error al restaurar', saved: 'Ajustes de copia guardados' },
+    account: {
+      changeProfile: 'Cambiar perfil', changeCredentials: 'Cambiar contraseña', about: 'Acerca de',
+      currentPassword: 'Contraseña actual', newUsername: 'Nuevo usuario', newPassword: 'Nueva contraseña',
+      confirmPassword: 'Confirmar contraseña', profileUpdated: 'Perfil actualizado',
+      credentialsUpdated: 'Contraseña cambiada', passwordMismatch: 'Las contraseñas no coinciden',
+      updateFailed: 'Error al actualizar', version: 'versión', license: 'Licencia',
+      mustChangePassword: 'Has iniciado sesión con la contraseña inicial — establece una nueva para continuar.' },
   },
 }
 
