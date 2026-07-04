@@ -30,16 +30,21 @@ const nowArtist = computed(() => (snap.value?.currentTitle && snap.value?.curren
 const remaining = computed(() => Math.max(0, (snap.value?.currentDurationSec || 0) - elapsed.value))
 
 // Previous / Now / Up next — three rows for the timeline, each with its start time.
+// "Up next" prefers the queued-track lookahead (while a slot is active); during a gap
+// with nothing queued, it falls back to the next scheduled slot's playlist + start time.
 const events = computed(() => {
   const s = snap.value
   const start = s?.currentStartedUtc ? new Date(s.currentStartedUtc).getTime() : null
   const nextTs = start ? start + (s?.currentDurationSec || 0) * 1000 : null
+  const queuedNext = s?.upNext?.[0]
+  const upNextLabel = queuedNext || s?.nextPlaylistName || '—'
+  const upNextTime = queuedNext ? fmtTime(nextTs) : (s?.nextSlotStartUtc ? fmtTime(s.nextSlotStartUtc) : '')
   return [
     { role: t('monitor.prev'), label: s?.previous || '—', time: s?.previous ? fmtTime(s?.previousStartedUtc) : '',
       icon: 'pi-step-backward', current: false },
     { role: t('monitor.now'), label: onAir.value || t('monitor.silence'), time: fmtTime(s?.currentStartedUtc),
       icon: 'pi-volume-up', current: true },
-    { role: t('monitor.upNext'), label: s?.upNext?.[0] || '—', time: s?.upNext?.[0] ? fmtTime(nextTs) : '',
+    { role: t('monitor.upNext'), label: upNextLabel, time: upNextTime,
       icon: 'pi-step-forward', current: false },
   ]
 })

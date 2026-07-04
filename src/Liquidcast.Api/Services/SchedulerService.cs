@@ -84,8 +84,12 @@ public class SchedulerService : BackgroundService
         if (active is null)
         {
             if (_activeKey is not null) ClearSlot();
+            await UpdateNextSlotAsync(db, slots, now, ct);
             return;
         }
+
+        _state.NextSlotStartUtc = null;
+        _state.NextPlaylistName = null;
 
         var key = $"{active.Id}@{bestStart:O}";
         if (key == _activeKey)
@@ -121,6 +125,32 @@ public class SchedulerService : BackgroundService
 
         _log.LogInformation("Slot {Slot} active → playlist '{Pl}' ({N} tracks)",
             active.Id, playlist?.Name, _items.Count);
+    }
+
+    /// <summary>No slot is active — find the soonest upcoming one across all slots so the
+    /// Monitor page has something to show during the gap.</summary>
+    private async Task UpdateNextSlotAsync(AppDbContext db, List<ScheduleSlot> slots, DateTime now, CancellationToken ct)
+    {
+        ScheduleSlot? next = null;
+        DateTime bestStart = DateTime.MaxValue;
+        foreach (var slot in slots)
+        {
+            var start = SlotOccurrence.NextStart(slot, now);
+            if (start is { } s && s < bestStart) { next = slot; bestStart = s; }
+        }
+
+        if (next is null)
+        {
+            _state.NextSlotStartUtc = null;
+            _state.NextPlaylistName = null;
+            return;
+        }
+
+        _state.NextSlotStartUtc = bestStart;
+        _state.NextPlaylistName = await db.Playlists.AsNoTracking()
+            .Where(p => p.Id == next.PlaylistId)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync(ct);
     }
 
     private static Task<Playlist?> LoadPlaylistAsync(AppDbContext db, int id, CancellationToken ct) =>

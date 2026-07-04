@@ -14,6 +14,11 @@ public class StreamState
     public int? CurrentPlaylistId { get; set; }
     public string? CurrentPlaylistName { get; set; }
 
+    /// <summary>When no slot is currently active, the next upcoming slot's start time and
+    /// playlist name — lets the Monitor page show what's coming up during a gap/fallback.</summary>
+    public DateTime? NextSlotStartUtc { get; set; }
+    public string? NextPlaylistName { get; set; }
+
     /// <summary>On-air metadata as reported by Liquidsoap (meta.now).</summary>
     public string? OnAir { get; set; }
     public string? CurrentTitle { get; set; }
@@ -31,6 +36,7 @@ public class StreamState
     public MonitorSnapshot Snapshot() => new(
         LiquidsoapUp, IcecastConnected, Listeners, FallbackActive, SchedulerEnabled,
         CurrentSlotId, CurrentPlaylistId, CurrentPlaylistName,
+        NextSlotStartUtc, NextPlaylistName,
         OnAir, CurrentTitle, CurrentArtist, CurrentDurationSec, CurrentStartedUtc,
         Previous, PreviousStartedUtc, UpNext.ToList(), DateTime.UtcNow);
 }
@@ -44,6 +50,8 @@ public record MonitorSnapshot(
     int? CurrentSlotId,
     int? CurrentPlaylistId,
     string? CurrentPlaylistName,
+    DateTime? NextSlotStartUtc,
+    string? NextPlaylistName,
     string? OnAir,
     string? CurrentTitle,
     string? CurrentArtist,
