@@ -1,0 +1,36 @@
+services:
+  icecast:
+    image: moul/icecast
+    restart: unless-stopped
+    environment:
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:-hackme}
+      ICECAST_ADMIN_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
+      ICECAST_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
+      ICECAST_RELAY_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
+      ICECAST_ADMIN_USERNAME: admin
+      ICECAST_HOSTNAME: ${ICECAST_HOSTNAME:-localhost}
+    ports:
+      - "8000:8000"
+
+  liquidcast:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - icecast
+    environment:
+      # Admin login (first run only — stored hashed in SQLite afterwards).
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      # Long random secret for signing session tokens.
+      Jwt__Secret: ${JWT_SECRET:-please-change-this-to-a-long-random-secret-0123456789}
+      # Reach Icecast by its compose service name; passwords match the icecast service.
+      ICECAST_HOST: icecast
+      ICECAST_PORT: "8000"
+      ICECAST_MOUNT: /stream
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:-hackme}
+      ICECAST_ADMIN_USER: admin
+      ICECAST_ADMIN_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data

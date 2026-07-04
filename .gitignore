@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Vite
+node_modules/
+src/web/dist/
+src/Liquidcast.Api/wwwroot/
+
+# Runtime data (tracks, sqlite db, generated script, logs, sockets)
+data/
+
+# Bundled liquidsoap binary + publish output
+/dist/
+/publish/
+
+# OS / editor
+.vs/
+.idea/
+*.DS_Store
+CLAUDE.md
+cache/

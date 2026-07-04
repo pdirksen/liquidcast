@@ -1,0 +1,243 @@
+import { createI18n } from 'vue-i18n'
+
+// "Playlists", "Tracks" and "on air" are intentionally NOT translated — they stay
+// as-is in every language (brand/section terms).
+const messages = {
+  en: {
+    common: { save: 'Save', cancel: 'Cancel', delete: 'Delete', create: 'Create',
+      search: 'Search…', none: '— none —' },
+    nav: { monitor: 'Monitor', schedule: 'Schedule', settings: 'Settings' },
+    login: { subtitle: 'Sign in to manage your stream', username: 'Username',
+      password: 'Password', signIn: 'Sign in', invalid: 'Invalid username or password.' },
+    monitor: {
+      title: 'Stream Monitor', nowOnAir: 'Now on air', silence: '— silence —',
+      skip: 'Skip', restartLs: 'Restart LS', scheduler: 'Scheduler', status: 'Status',
+      liquidsoap: 'Liquidsoap', icecast: 'Icecast', listeners: 'Listeners',
+      playlist: 'Playlist', scheduled: 'Scheduled', upNext: 'Up next', prev: 'Previous', now: 'Now', queueEmpty: 'Queue empty', listen: 'Listen',
+      fallbackActive: 'Fallback active', up: 'up', down: 'down',
+      connected: 'connected', offline: 'offline',
+      live: 'Live', copied: 'Stream URL copied' },
+    tracks: {
+      title: 'Track Library', upload: 'Upload MP3', title_col: 'Title', artist: 'Artist',
+      album: 'Album', duration: 'Duration', bitrate: 'Bitrate', size: 'Size',
+      deleteHeader: 'Delete track', deleteMsg: 'Delete "{name}"?',
+      uploaded: 'Uploaded {n} file(s)', existed: '{n} already existed',
+      cannotDelete: 'Cannot delete', deleted: 'Deleted', uploadFailed: 'Upload failed',
+      folderPlaceholder: 'Subfolder (optional)', rescan: 'Rescan',
+      rescanned: 'Scan done: {added} added, {updated} updated', rescanFailed: 'Rescan failed',
+      newFolder: 'New folder', createFolder: 'Create folder', folderName: 'Folder name (e.g. Shows/Morning)',
+      createFolderFailed: 'Could not create folder', deleteFolderHeader: 'Delete folder',
+      deleteFolderMsg: 'Delete folder "{name}"?', folderDeleted: 'Folder deleted',
+      folderNotEmpty: 'Folder is not empty', moved: 'Track moved', moveFailed: 'Could not move track',
+      dropToRoot: 'Drop here to move to the root folder' },
+    playlists: {
+      title: 'Playlists', newPlaylist: 'New playlist', name: 'Name', runtime: 'Runtime',
+      deleteHeader: 'Delete playlist', deleteMsg: 'Delete playlist "{name}"?',
+      playlistName: 'Playlist name', deleted: 'Deleted' },
+    editor: {
+      save: 'Save', saved: 'Playlist saved', saveFailed: 'Save failed',
+      library: 'Library', timeline: 'Timeline', dragReorder: 'drag tracks here · reorder',
+      dragHint: 'Drag tracks from the library to build the timeline.',
+      crossfadeTip: 'Crossfade override (s)', tracksWord: 'tracks' },
+    schedule: {
+      title: 'Schedule', addSlot: 'Add slot', newSlot: 'New slot', editSlot: 'Edit slot',
+      playlist: 'Playlist', start: 'Start', end: 'End', repeat: 'Repeat', cut: 'Cut',
+      oneOff: 'One-off', daily: 'Daily', weekly: 'Weekly', hard: 'hard', crossfade: 'crossfade',
+      selectPlaylist: 'Select playlist', loopFill: 'Loop playlist to fill slot',
+      hardCutStart: 'Hard cut on slot start', allDay: 'All day (full 24h days)', deleteHeader: 'Delete slot',
+      deleteMsg: 'Delete this scheduled slot?', saved: 'Saved', cannotSave: 'Cannot save' },
+    settings: {
+      title: 'Settings', saveApply: 'Save & apply',
+      warn: 'Saving regenerates the Liquidsoap script and restarts the process — the stream blips briefly.',
+      icecastOutput: 'Icecast output', host: 'Host', port: 'Port', mount: 'Mount',
+      sourcePassword: 'Source password', bitrate: 'Bitrate (kbps)', streamName: 'Stream name',
+      description: 'Description', icecastAdmin: 'Icecast admin (listener stats)',
+      adminUser: 'Admin user', adminPassword: 'Admin password', crossfade: 'Crossfade',
+      defaultCrossfade: 'Default crossfade (s)', fadeIn: 'Fade in (s)', fadeOut: 'Fade out (s)',
+      fallback: 'Fallback', whenQueueEmpty: 'When queue empty', silence: 'Silence',
+      fallbackPlaylistOpt: 'Fallback playlist', fallbackPlaylistLabel: 'Fallback playlist',
+      fallbackNote: 'Fallback also reads loose MP3s in {dir}.', lsProcess: 'Liquidsoap process',
+      binaryPath: 'Binary path', fromPath: '(from PATH)', controlMode: 'Control mode',
+      telnetPort: 'Telnet port', lsLogLevel: 'Liquidsoap log level (1–4)',
+      dataPath: 'Data path', tcpMode: 'TCP telnet (Windows)',
+      unixMode: 'Unix socket (Linux)', saved: 'Settings saved', restarting: 'Liquidsoap restarting…',
+      saveFailed: 'Save failed', display: 'Display', dateFormat: 'Date & time format',
+      tabStream: 'Stream', tabPlayback: 'Playback', tabSystem: 'System', tabBackup: 'Backup' },
+    backup: {
+      schedule: 'Scheduled backups', enabled: 'Enable daily backup', targetPath: 'Target folder',
+      time: 'Time (HH:MM)', keep: 'Keep last N', scheduleHint: 'Runs daily at the set time while the app is running. Backs up the database only.',
+      lastRun: 'Last backup', never: 'never', manual: 'Manual backup', runNow: 'Back up now',
+      restore: 'Restore', restoreHint: 'Restoring replaces the current database and restarts the audio engine.',
+      fromList: 'From a saved backup', fromFile: 'From a file', choose: 'Choose file…',
+      select: 'Select a backup', none: 'No backups found',
+      confirm: 'Restore this backup? It overwrites the current database.',
+      runSuccess: 'Backup created', runFailed: 'Backup failed',
+      restoreSuccess: 'Backup restored', restoreFailed: 'Restore failed', saved: 'Backup settings saved' },
+  },
+  de: {
+    common: { save: 'Speichern', cancel: 'Abbrechen', delete: 'Löschen', create: 'Erstellen',
+      search: 'Suchen…', none: '— keine —' },
+    nav: { monitor: 'Monitor', schedule: 'Zeitplan', settings: 'Einstellungen' },
+    login: { subtitle: 'Anmelden, um deinen Stream zu verwalten', username: 'Benutzername',
+      password: 'Passwort', signIn: 'Anmelden', invalid: 'Ungültiger Benutzername oder Passwort.' },
+    monitor: {
+      title: 'Stream-Monitor', nowOnAir: 'Now on air', silence: '— Stille —',
+      skip: 'Überspringen', restartLs: 'LS neu starten', scheduler: 'Planer', status: 'Status',
+      liquidsoap: 'Liquidsoap', icecast: 'Icecast', listeners: 'Hörer',
+      playlist: 'Playlist', scheduled: 'Geplant', upNext: 'Als Nächstes', prev: 'Vorheriger', now: 'Jetzt', queueEmpty: 'Warteschlange leer', listen: 'Anhören',
+      fallbackActive: 'Fallback aktiv', up: 'aktiv', down: 'aus',
+      connected: 'verbunden', offline: 'offline',
+      live: 'Live', copied: 'Stream-URL kopiert' },
+    tracks: {
+      title: 'Titelbibliothek', upload: 'MP3 hochladen', title_col: 'Titel', artist: 'Künstler',
+      album: 'Album', duration: 'Dauer', bitrate: 'Bitrate', size: 'Größe',
+      deleteHeader: 'Titel löschen', deleteMsg: '„{name}“ löschen?',
+      uploaded: '{n} Datei(en) hochgeladen', existed: '{n} bereits vorhanden',
+      cannotDelete: 'Löschen nicht möglich', deleted: 'Gelöscht', uploadFailed: 'Upload fehlgeschlagen',
+      folderPlaceholder: 'Unterordner (optional)', rescan: 'Neu einlesen',
+      rescanned: 'Scan fertig: {added} neu, {updated} aktualisiert', rescanFailed: 'Einlesen fehlgeschlagen',
+      newFolder: 'Neuer Ordner', createFolder: 'Ordner erstellen', folderName: 'Ordnername (z. B. Shows/Morning)',
+      createFolderFailed: 'Ordner konnte nicht erstellt werden', deleteFolderHeader: 'Ordner löschen',
+      deleteFolderMsg: 'Ordner „{name}“ löschen?', folderDeleted: 'Ordner gelöscht',
+      folderNotEmpty: 'Ordner ist nicht leer', moved: 'Titel verschoben', moveFailed: 'Titel konnte nicht verschoben werden',
+      dropToRoot: 'Hier ablegen, um in den Stammordner zu verschieben' },
+    playlists: {
+      title: 'Playlists', newPlaylist: 'Neue Playlist', name: 'Name', runtime: 'Laufzeit',
+      deleteHeader: 'Playlist löschen', deleteMsg: 'Playlist „{name}“ löschen?',
+      playlistName: 'Playlist-Name', deleted: 'Gelöscht' },
+    editor: {
+      save: 'Speichern', saved: 'Playlist gespeichert', saveFailed: 'Speichern fehlgeschlagen',
+      library: 'Bibliothek', timeline: 'Zeitleiste', dragReorder: 'Titel hierher ziehen · sortieren',
+      dragHint: 'Ziehe Titel aus der Bibliothek, um die Zeitleiste zu füllen.',
+      crossfadeTip: 'Crossfade-Überschreibung (s)', tracksWord: 'Titel' },
+    schedule: {
+      title: 'Zeitplan', addSlot: 'Slot hinzufügen', newSlot: 'Neuer Slot', editSlot: 'Slot bearbeiten',
+      playlist: 'Playlist', start: 'Start', end: 'Ende', repeat: 'Wiederholung', cut: 'Schnitt',
+      oneOff: 'Einmalig', daily: 'Täglich', weekly: 'Wöchentlich', hard: 'hart', crossfade: 'Crossfade',
+      selectPlaylist: 'Playlist wählen', loopFill: 'Playlist wiederholen, um Slot zu füllen',
+      hardCutStart: 'Harter Schnitt bei Slot-Beginn', allDay: 'Ganztägig (volle 24h-Tage)', deleteHeader: 'Slot löschen',
+      deleteMsg: 'Diesen geplanten Slot löschen?', saved: 'Gespeichert', cannotSave: 'Speichern nicht möglich' },
+    settings: {
+      title: 'Einstellungen', saveApply: 'Speichern & anwenden',
+      warn: 'Beim Speichern wird das Liquidsoap-Skript neu erzeugt und der Prozess neu gestartet — der Stream stockt kurz.',
+      icecastOutput: 'Icecast-Ausgabe', host: 'Host', port: 'Port', mount: 'Mount',
+      sourcePassword: 'Quell-Passwort', bitrate: 'Bitrate (kbps)', streamName: 'Stream-Name',
+      description: 'Beschreibung', icecastAdmin: 'Icecast-Admin (Hörerstatistik)',
+      adminUser: 'Admin-Benutzer', adminPassword: 'Admin-Passwort', crossfade: 'Crossfade',
+      defaultCrossfade: 'Standard-Crossfade (s)', fadeIn: 'Einblenden (s)', fadeOut: 'Ausblenden (s)',
+      fallback: 'Fallback', whenQueueEmpty: 'Wenn Warteschlange leer', silence: 'Stille',
+      fallbackPlaylistOpt: 'Fallback-Playlist', fallbackPlaylistLabel: 'Fallback-Playlist',
+      fallbackNote: 'Fallback liest auch lose MP3s in {dir}.', lsProcess: 'Liquidsoap-Prozess',
+      binaryPath: 'Binärpfad', fromPath: '(aus PATH)', controlMode: 'Steuerungsmodus',
+      telnetPort: 'Telnet-Port', lsLogLevel: 'Liquidsoap-Loglevel (1–4)',
+      dataPath: 'Datenpfad', tcpMode: 'TCP-Telnet (Windows)',
+      unixMode: 'Unix-Socket (Linux)', saved: 'Einstellungen gespeichert', restarting: 'Liquidsoap startet neu…',
+      saveFailed: 'Speichern fehlgeschlagen', display: 'Anzeige', dateFormat: 'Datums- und Zeitformat',
+      tabStream: 'Stream', tabPlayback: 'Wiedergabe', tabSystem: 'System', tabBackup: 'Backup' },
+    backup: {
+      schedule: 'Geplante Backups', enabled: 'Tägliches Backup aktivieren', targetPath: 'Zielordner',
+      time: 'Uhrzeit (HH:MM)', keep: 'Letzte N behalten', scheduleHint: 'Läuft täglich zur eingestellten Zeit, solange die App läuft. Sichert nur die Datenbank.',
+      lastRun: 'Letztes Backup', never: 'nie', manual: 'Manuelles Backup', runNow: 'Jetzt sichern',
+      restore: 'Wiederherstellen', restoreHint: 'Die Wiederherstellung ersetzt die aktuelle Datenbank und startet die Audio-Engine neu.',
+      fromList: 'Aus gespeichertem Backup', fromFile: 'Aus Datei', choose: 'Datei wählen…',
+      select: 'Backup auswählen', none: 'Keine Backups gefunden',
+      confirm: 'Dieses Backup wiederherstellen? Die aktuelle Datenbank wird überschrieben.',
+      runSuccess: 'Backup erstellt', runFailed: 'Backup fehlgeschlagen',
+      restoreSuccess: 'Backup wiederhergestellt', restoreFailed: 'Wiederherstellung fehlgeschlagen', saved: 'Backup-Einstellungen gespeichert' },
+  },
+  es: {
+    common: { save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar', create: 'Crear',
+      search: 'Buscar…', none: '— ninguna —' },
+    nav: { monitor: 'Monitor', schedule: 'Programación', settings: 'Ajustes' },
+    login: { subtitle: 'Inicia sesión para gestionar tu transmisión', username: 'Usuario',
+      password: 'Contraseña', signIn: 'Iniciar sesión', invalid: 'Usuario o contraseña no válidos.' },
+    monitor: {
+      title: 'Monitor de transmisión', nowOnAir: 'Now on air', silence: '— silencio —',
+      skip: 'Saltar', restartLs: 'Reiniciar LS', scheduler: 'Programador', status: 'Estado',
+      liquidsoap: 'Liquidsoap', icecast: 'Icecast', listeners: 'Oyentes',
+      playlist: 'Playlist', scheduled: 'Programado', upNext: 'A continuación', prev: 'Anterior', now: 'Ahora', queueEmpty: 'Cola vacía', listen: 'Escuchar',
+      fallbackActive: 'Reserva activa', up: 'activo', down: 'inactivo',
+      connected: 'conectado', offline: 'desconectado',
+      live: 'En directo', copied: 'URL de transmisión copiada' },
+    tracks: {
+      title: 'Biblioteca de pistas', upload: 'Subir MP3', title_col: 'Título', artist: 'Artista',
+      album: 'Álbum', duration: 'Duración', bitrate: 'Bitrate', size: 'Tamaño',
+      deleteHeader: 'Eliminar pista', deleteMsg: '¿Eliminar "{name}"?',
+      uploaded: '{n} archivo(s) subido(s)', existed: '{n} ya existía(n)',
+      cannotDelete: 'No se puede eliminar', deleted: 'Eliminado', uploadFailed: 'Error al subir',
+      folderPlaceholder: 'Subcarpeta (opcional)', rescan: 'Reescanear',
+      rescanned: 'Escaneo listo: {added} añadidas, {updated} actualizadas', rescanFailed: 'Error al reescanear',
+      newFolder: 'Nueva carpeta', createFolder: 'Crear carpeta', folderName: 'Nombre de carpeta (p. ej. Shows/Morning)',
+      createFolderFailed: 'No se pudo crear la carpeta', deleteFolderHeader: 'Eliminar carpeta',
+      deleteFolderMsg: '¿Eliminar la carpeta "{name}"?', folderDeleted: 'Carpeta eliminada',
+      folderNotEmpty: 'La carpeta no está vacía', moved: 'Pista movida', moveFailed: 'No se pudo mover la pista',
+      dropToRoot: 'Suelta aquí para mover a la carpeta raíz' },
+    playlists: {
+      title: 'Playlists', newPlaylist: 'Nueva playlist', name: 'Nombre', runtime: 'Duración',
+      deleteHeader: 'Eliminar playlist', deleteMsg: '¿Eliminar la playlist "{name}"?',
+      playlistName: 'Nombre de la playlist', deleted: 'Eliminado' },
+    editor: {
+      save: 'Guardar', saved: 'Playlist guardada', saveFailed: 'Error al guardar',
+      library: 'Biblioteca', timeline: 'Línea de tiempo', dragReorder: 'arrastra pistas aquí · reordena',
+      dragHint: 'Arrastra pistas desde la biblioteca para construir la línea de tiempo.',
+      crossfadeTip: 'Anular crossfade (s)', tracksWord: 'pistas' },
+    schedule: {
+      title: 'Programación', addSlot: 'Añadir franja', newSlot: 'Nueva franja', editSlot: 'Editar franja',
+      playlist: 'Playlist', start: 'Inicio', end: 'Fin', repeat: 'Repetir', cut: 'Corte',
+      oneOff: 'Única', daily: 'Diaria', weekly: 'Semanal', hard: 'duro', crossfade: 'crossfade',
+      selectPlaylist: 'Selecciona playlist', loopFill: 'Repetir playlist para llenar la franja',
+      hardCutStart: 'Corte duro al iniciar la franja', allDay: 'Todo el día (días completos 24h)', deleteHeader: 'Eliminar franja',
+      deleteMsg: '¿Eliminar esta franja programada?', saved: 'Guardado', cannotSave: 'No se puede guardar' },
+    settings: {
+      title: 'Ajustes', saveApply: 'Guardar y aplicar',
+      warn: 'Al guardar se regenera el script de Liquidsoap y se reinicia el proceso — la transmisión se corta un instante.',
+      icecastOutput: 'Salida Icecast', host: 'Host', port: 'Puerto', mount: 'Punto de montaje',
+      sourcePassword: 'Contraseña de origen', bitrate: 'Bitrate (kbps)', streamName: 'Nombre de transmisión',
+      description: 'Descripción', icecastAdmin: 'Admin de Icecast (estadísticas de oyentes)',
+      adminUser: 'Usuario admin', adminPassword: 'Contraseña admin', crossfade: 'Crossfade',
+      defaultCrossfade: 'Crossfade por defecto (s)', fadeIn: 'Aparición (s)', fadeOut: 'Desaparición (s)',
+      fallback: 'Reserva', whenQueueEmpty: 'Cuando la cola está vacía', silence: 'Silencio',
+      fallbackPlaylistOpt: 'Playlist de reserva', fallbackPlaylistLabel: 'Playlist de reserva',
+      fallbackNote: 'La reserva también lee MP3 sueltos en {dir}.', lsProcess: 'Proceso de Liquidsoap',
+      binaryPath: 'Ruta del binario', fromPath: '(desde PATH)', controlMode: 'Modo de control',
+      telnetPort: 'Puerto telnet', lsLogLevel: 'Nivel de log de Liquidsoap (1–4)',
+      dataPath: 'Ruta de datos', tcpMode: 'Telnet TCP (Windows)',
+      unixMode: 'Socket Unix (Linux)', saved: 'Ajustes guardados', restarting: 'Reiniciando Liquidsoap…',
+      saveFailed: 'Error al guardar', display: 'Visualización', dateFormat: 'Formato de fecha y hora',
+      tabStream: 'Stream', tabPlayback: 'Reproducción', tabSystem: 'Sistema', tabBackup: 'Backup' },
+    backup: {
+      schedule: 'Copias programadas', enabled: 'Activar copia diaria', targetPath: 'Carpeta destino',
+      time: 'Hora (HH:MM)', keep: 'Conservar últimas N', scheduleHint: 'Se ejecuta a diario a la hora fijada mientras la app está activa. Solo respalda la base de datos.',
+      lastRun: 'Última copia', never: 'nunca', manual: 'Copia manual', runNow: 'Hacer copia ahora',
+      restore: 'Restaurar', restoreHint: 'Restaurar reemplaza la base de datos actual y reinicia el motor de audio.',
+      fromList: 'Desde una copia guardada', fromFile: 'Desde un archivo', choose: 'Elegir archivo…',
+      select: 'Selecciona una copia', none: 'No hay copias',
+      confirm: '¿Restaurar esta copia? Sobrescribe la base de datos actual.',
+      runSuccess: 'Copia creada', runFailed: 'Error en la copia',
+      restoreSuccess: 'Copia restaurada', restoreFailed: 'Error al restaurar', saved: 'Ajustes de copia guardados' },
+  },
+}
+
+// `country` is an ISO 3166-1 alpha-2 code used to load a flag image (flagcdn).
+export const LOCALES = [
+  { code: 'en', label: 'English', country: 'gb' },
+  { code: 'de', label: 'Deutsch', country: 'de' },
+  { code: 'es', label: 'Español', country: 'es' },
+]
+
+const saved = localStorage.getItem('locale')
+const fallback = 'en'
+const initial = saved && LOCALES.some((l) => l.code === saved) ? saved : fallback
+
+export const i18n = createI18n({
+  legacy: false,
+  locale: initial,
+  fallbackLocale: fallback,
+  messages,
+})
+
+export function setLocale(code) {
+  i18n.global.locale.value = code
+  localStorage.setItem('locale', code)
+  document.documentElement.lang = code
+}

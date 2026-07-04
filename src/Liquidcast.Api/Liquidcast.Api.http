@@ -1,0 +1,6 @@
+@Liquidcast.Api_HostAddress = http://localhost:5044
+
+GET {{Liquidcast.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
