@@ -135,7 +135,7 @@ const fmt = (iso) => formatDateTime(iso, prefs.dateFormat)
       <div class="form">
         <label>{{ t('schedule.playlist') }}</label>
         <Select v-model="form.playlistId" :options="playlists" optionLabel="label" optionValue="value"
-          :placeholder="t('schedule.selectPlaylist')" />
+          :placeholder="t('schedule.selectPlaylist')" filter :filterPlaceholder="t('common.search')" />
         <div class="row" style="grid-column:1/-1">
           <Checkbox v-model="form.allDay" :binary="true" inputId="allday" />
           <label for="allday" style="margin:0">{{ t('schedule.allDay') }}</label>
