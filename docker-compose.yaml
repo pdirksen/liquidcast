@@ -1,11 +1,10 @@
 services:
   icecast:
-    image: moul/icecast
+    image: libretime/icecast:2.5.0
     restart: unless-stopped
     environment:
       ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:-hackme}
       ICECAST_ADMIN_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
-      ICECAST_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
       ICECAST_RELAY_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-hackme}
       ICECAST_ADMIN_USERNAME: admin
       ICECAST_HOSTNAME: ${ICECAST_HOSTNAME:-localhost}
