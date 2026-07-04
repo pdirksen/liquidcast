@@ -134,9 +134,14 @@ public static class BackupEndpoints
     private static BackupSettingsDto ToDto(BackupSetting b, RuntimeConfig cfg) =>
         new(b.Enabled, b.TargetPath ?? EffectiveTarget(cfg, null), b.ScheduleTime, b.KeepCount, b.LastBackupAt);
 
+    // Allowlist rather than blocklist: name must be a bare filename with no directory
+    // component at all (Path.GetFileName strips any), otherwise a drive-relative name
+    // like "C:evil.zip" passes a "/","\",".." blocklist yet still resolves outside
+    // EffectiveTarget once combined via Path.Combine.
     private static bool IsValidName(string? name) =>
-        !string.IsNullOrWhiteSpace(name) && !name.Contains('/') && !name.Contains('\\')
-        && !name.Contains("..") && name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+        !string.IsNullOrWhiteSpace(name) && !name.Contains(':')
+        && name == Path.GetFileName(name)
+        && name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeTime(string? time) =>
         TimeOnly.TryParse(time, out var t) ? t.ToString("HH:mm") : "02:00";

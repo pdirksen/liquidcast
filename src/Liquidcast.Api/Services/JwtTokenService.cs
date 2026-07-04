@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,12 +13,33 @@ public class JwtTokenService
 
     private readonly SymmetricSecurityKey _key;
 
-    public JwtTokenService(IConfiguration config)
+    public JwtTokenService(string secret)
     {
-        var secret = config["Jwt:Secret"];
-        if (string.IsNullOrWhiteSpace(secret) || secret.Length < 32)
-            secret = "liquidcast-dev-secret-change-me-please-0123456789"; // dev fallback
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+    }
+
+    /// <summary>
+    /// Uses Jwt:Secret from config if set (min 32 chars); otherwise generates a
+    /// random key on first run and persists it under the data directory so
+    /// existing sessions survive restarts.
+    /// </summary>
+    public static string ResolveSecret(IConfiguration config, string dataPath)
+    {
+        var configured = config["Jwt:Secret"];
+        if (!string.IsNullOrWhiteSpace(configured) && configured.Length >= 32)
+            return configured;
+
+        var secretPath = Path.Combine(dataPath, "jwt.secret");
+        if (File.Exists(secretPath))
+        {
+            var existing = File.ReadAllText(secretPath).Trim();
+            if (existing.Length >= 32)
+                return existing;
+        }
+
+        var generated = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        File.WriteAllText(secretPath, generated);
+        return generated;
     }
 
     public SymmetricSecurityKey Key => _key;

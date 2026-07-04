@@ -243,17 +243,25 @@ public class TrackService
         try
         {
             var t = new ATL.Track(path);
-            return new Meta(
-                string.IsNullOrWhiteSpace(t.Title) ? null : t.Title,
-                string.IsNullOrWhiteSpace(t.Artist) ? null : t.Artist,
-                string.IsNullOrWhiteSpace(t.Album) ? null : t.Album,
-                t.Duration, // seconds
-                t.Bitrate);
+            var title = Sanitize(t.Title);
+            var artist = Sanitize(t.Artist);
+            var album = Sanitize(t.Album);
+            return new Meta(title, artist, album, t.Duration, t.Bitrate);
         }
         catch
         {
             return new Meta(null, null, null, 0, 0);
         }
+    }
+
+    // ID3 tags are attacker-controlled (an uploaded file's metadata). Strip control
+    // characters — in particular \r/\n, which would otherwise reach the Liquidsoap
+    // control socket's line-based protocol and let a crafted tag inject extra commands.
+    private static string? Sanitize(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        var cleaned = new string(s.Where(c => !char.IsControl(c)).ToArray()).Trim();
+        return cleaned.Length == 0 ? null : cleaned;
     }
 
     private static string MakeUniqueName(string original, string targetDir)

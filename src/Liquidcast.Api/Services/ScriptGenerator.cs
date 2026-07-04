@@ -16,7 +16,16 @@ public class ScriptGenerator
     public ScriptGenerator(RuntimeConfig cfg) => _cfg = cfg;
 
     private static string F(double d) => d.ToString("0.0##", CultureInfo.InvariantCulture);
-    private static string Q(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+    // Escapes \r/\n as well as \/" — the annotate URI this builds is sent as a single
+    // line over the control socket (LiquidsoapClient writes cmd + "\n"); a raw newline
+    // in a value (e.g. from an uploaded file's ID3 tags) would otherwise split into an
+    // extra line and let untrusted metadata inject further control-socket commands.
+    private static string Q(string s) => "\"" + s
+        .Replace("\\", "\\\\")
+        .Replace("\"", "\\\"")
+        .Replace("\r", "\\r")
+        .Replace("\n", "\\n")
+        + "\"";
     private static string LiqPath(string p) => Q(p.Replace('\\', '/'));
 
     public string Generate()
@@ -110,7 +119,9 @@ public class ScriptGenerator
         if (cueOut is > 0) ann.Add($"liq_cue_out={F(cueOut.Value)}");
         if (crossfadeSec is >= 0) ann.Add($"liq_cross_duration={F(crossfadeSec.Value)}");
 
-        var path = filePath.Replace('\\', '/');
+        // Not a quoted string literal (it's the trailing URI), so strip rather than
+        // escape — a raw \r/\n here would break the single-line control-socket command.
+        var path = filePath.Replace('\\', '/').Replace("\r", "").Replace("\n", "");
         return ann.Count == 0 ? path : $"annotate:{string.Join(",", ann)}:{path}";
     }
 }

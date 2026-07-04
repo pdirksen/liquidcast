@@ -24,7 +24,8 @@ builder.Services.AddSingleton<StreamState>();
 builder.Services.AddSingleton<ScriptGenerator>();
 builder.Services.AddSingleton<LiquidsoapClient>();
 builder.Services.AddSingleton<IcecastClient>();
-builder.Services.AddSingleton<JwtTokenService>();
+var jwtSecret = JwtTokenService.ResolveSecret(builder.Configuration, dataPath);
+builder.Services.AddSingleton(new JwtTokenService(jwtSecret));
 builder.Services.AddScoped<TrackService>();
 builder.Services.AddHttpClient();
 
@@ -45,7 +46,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // AuthN: JWT, read from cookie or Authorization header (so SignalR ws works too).
-var jwt = new JwtTokenService(builder.Configuration);
+var jwt = new JwtTokenService(jwtSecret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
