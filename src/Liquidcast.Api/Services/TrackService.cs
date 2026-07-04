@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using Liquidcast.Api.Data;
+using Liquidcast.Api.Persistence;
 using Liquidcast.Api.Models;
 using Microsoft.EntityFrameworkCore;
 

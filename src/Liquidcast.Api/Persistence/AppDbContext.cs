@@ -2,7 +2,7 @@ using Liquidcast.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Liquidcast.Api.Data;
+namespace Liquidcast.Api.Persistence;
 
 public class AppDbContext : DbContext
 {

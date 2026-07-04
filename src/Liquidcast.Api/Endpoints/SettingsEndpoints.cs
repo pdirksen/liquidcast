@@ -1,4 +1,4 @@
-using Liquidcast.Api.Data;
+using Liquidcast.Api.Persistence;
 using Liquidcast.Api.Models;
 using Liquidcast.Api.Services;
 using Microsoft.EntityFrameworkCore;
