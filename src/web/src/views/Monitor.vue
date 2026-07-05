@@ -8,6 +8,7 @@ import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Tag from 'primevue/tag'
 import Timeline from 'primevue/timeline'
+import ListenerChart from '../components/ListenerChart.vue'
 import { useToast } from 'primevue/usetoast'
 
 const { t } = useI18n()
@@ -165,6 +166,8 @@ async function copyUrl() {
           </div>
         </div>
 
+        <ListenerChart />
+
         <div class="listen">
           <h3 class="card-title">{{ t('monitor.listen') }}</h3>
           <div v-if="streamUrl" class="listen-player">
@@ -219,7 +222,7 @@ async function copyUrl() {
 .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; }
 .big { grid-row: span 2; display: flex; flex-direction: column; }
-.listen { margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.listen { padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .card-title { margin: 0 0 .75rem; font-size: 1rem; font-weight: 600; }
 
 /* --- Now on air hero --- */

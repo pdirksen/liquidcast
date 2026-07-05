@@ -16,7 +16,9 @@ const messages = {
       playlist: 'Playlist', scheduled: 'Scheduled', upNext: 'Up next', prev: 'Previous', now: 'Now', queueEmpty: 'Queue empty', listen: 'Listen',
       fallbackActive: 'Fallback active', up: 'up', down: 'down',
       connected: 'connected', offline: 'offline',
-      live: 'Live', copied: 'Stream URL copied' },
+      live: 'Live', copied: 'Stream URL copied',
+      listenerHistory: 'Listener history', range24h: 'Last 24h', rangeWeek: 'Last week',
+      rangeMonth: 'Last month', noData: 'No listener data yet', avg: 'Avg', peak: 'Peak' },
     tracks: {
       title: 'Track Library', upload: 'Upload MP3', title_col: 'Title', artist: 'Artist',
       album: 'Album', duration: 'Duration', bitrate: 'Bitrate', size: 'Size',
@@ -99,7 +101,9 @@ const messages = {
       playlist: 'Playlist', scheduled: 'Geplant', upNext: 'Als Nächstes', prev: 'Vorheriger', now: 'Jetzt', queueEmpty: 'Warteschlange leer', listen: 'Anhören',
       fallbackActive: 'Fallback aktiv', up: 'aktiv', down: 'aus',
       connected: 'verbunden', offline: 'offline',
-      live: 'Live', copied: 'Stream-URL kopiert' },
+      live: 'Live', copied: 'Stream-URL kopiert',
+      listenerHistory: 'Hörer-Verlauf', range24h: 'Letzte 24h', rangeWeek: 'Letzte Woche',
+      rangeMonth: 'Letzter Monat', noData: 'Noch keine Hörerdaten', avg: 'Ø', peak: 'Max' },
     tracks: {
       title: 'Titelbibliothek', upload: 'MP3 hochladen', title_col: 'Titel', artist: 'Künstler',
       album: 'Album', duration: 'Dauer', bitrate: 'Bitrate', size: 'Größe',
@@ -182,7 +186,9 @@ const messages = {
       playlist: 'Playlist', scheduled: 'Programado', upNext: 'A continuación', prev: 'Anterior', now: 'Ahora', queueEmpty: 'Cola vacía', listen: 'Escuchar',
       fallbackActive: 'Reserva activa', up: 'activo', down: 'inactivo',
       connected: 'conectado', offline: 'desconectado',
-      live: 'En directo', copied: 'URL de transmisión copiada' },
+      live: 'En directo', copied: 'URL de transmisión copiada',
+      listenerHistory: 'Historial de oyentes', range24h: 'Últimas 24h', rangeWeek: 'Última semana',
+      rangeMonth: 'Último mes', noData: 'Aún no hay datos de oyentes', avg: 'Media', peak: 'Máx' },
     tracks: {
       title: 'Biblioteca de pistas', upload: 'Subir MP3', title_col: 'Título', artist: 'Artista',
       album: 'Álbum', duration: 'Duración', bitrate: 'Bitrate', size: 'Tamaño',

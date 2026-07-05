@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<AppSetting> Settings => Set<AppSetting>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<BackupSetting> BackupSettings => Set<BackupSetting>();
+    public DbSet<ListenerSample> ListenerSamples => Set<ListenerSample>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -37,6 +38,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
+        b.Entity<ListenerSample>().HasIndex(s => s.SampleUtc);
 
         // Singleton settings rows.
         b.Entity<AppSetting>().HasData(new AppSetting { Id = 1 });
