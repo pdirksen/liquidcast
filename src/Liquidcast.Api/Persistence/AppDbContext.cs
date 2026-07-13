@@ -11,7 +11,8 @@ public class AppDbContext : DbContext
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
     public DbSet<PlaylistItem> PlaylistItems => Set<PlaylistItem>();
-    public DbSet<ScheduleSlot> ScheduleSlots => Set<ScheduleSlot>();
+    public DbSet<ScheduledTrack> ScheduledTracks => Set<ScheduledTrack>();
+    public DbSet<ScheduleLine> ScheduleLines => Set<ScheduleLine>();
     public DbSet<AppSetting> Settings => Set<AppSetting>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<BackupSetting> BackupSettings => Set<BackupSetting>();
@@ -31,11 +32,15 @@ public class AppDbContext : DbContext
             .HasForeignKey(pi => pi.TrackId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        b.Entity<ScheduleSlot>()
-            .HasOne(s => s.Playlist)
+        b.Entity<ScheduledTrack>()
+            .HasOne(s => s.Track)
             .WithMany()
-            .HasForeignKey(s => s.PlaylistId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .HasForeignKey(s => s.TrackId)
+            .OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ScheduledTrack>().HasIndex(s => s.StartUtc);
+
+        // Id IS the line number (0..4), assigned by the client — never an identity column.
+        b.Entity<ScheduleLine>().Property(l => l.Id).ValueGeneratedNever();
 
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
         b.Entity<ListenerSample>().HasIndex(s => s.SampleUtc);

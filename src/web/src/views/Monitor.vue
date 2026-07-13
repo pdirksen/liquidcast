@@ -10,6 +10,7 @@ import Tag from 'primevue/tag'
 import Timeline from 'primevue/timeline'
 import ListenerChart from '../components/ListenerChart.vue'
 import { useToast } from 'primevue/usetoast'
+import { useLineNames } from '../composables/lineNames'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -25,21 +26,24 @@ const onAir = computed(() => snap.value?.onAir || (snap.value?.currentTitle
 
 const fmtTime = (v) => (v ? new Date(v).toLocaleTimeString() : '')
 
+// Label of the timeline line the current entry sits on (custom name or default).
+const { lineLabel } = useLineNames()
+
 // Split title/artist when the snapshot has them; otherwise fall back to the combined string.
 const nowTitle = computed(() => snap.value?.currentTitle || onAir.value)
 const nowArtist = computed(() => (snap.value?.currentTitle && snap.value?.currentArtist) || '')
 const remaining = computed(() => Math.max(0, (snap.value?.currentDurationSec || 0) - elapsed.value))
 
 // Previous / Now / Up next — three rows for the timeline, each with its start time.
-// "Up next" prefers the queued-track lookahead (while a slot is active); during a gap
-// with nothing queued, it falls back to the next scheduled slot's playlist + start time.
+// "Up next" prefers the queued-track lookahead (while an entry is active); during a gap
+// with nothing queued, it falls back to the next scheduled track + its start time.
 const events = computed(() => {
   const s = snap.value
   const start = s?.currentStartedUtc ? new Date(s.currentStartedUtc).getTime() : null
   const nextTs = start ? start + (s?.currentDurationSec || 0) * 1000 : null
   const queuedNext = s?.upNext?.[0]
-  const upNextLabel = queuedNext || s?.nextPlaylistName || '—'
-  const upNextTime = queuedNext ? fmtTime(nextTs) : (s?.nextSlotStartUtc ? fmtTime(s.nextSlotStartUtc) : '')
+  const upNextLabel = queuedNext || s?.nextTrackLabel || '—'
+  const upNextTime = queuedNext ? fmtTime(nextTs) : (s?.nextStartUtc ? fmtTime(s.nextStartUtc) : '')
   return [
     { role: t('monitor.prev'), label: s?.previous || '—', time: s?.previous ? fmtTime(s?.previousStartedUtc) : '',
       icon: 'pi-step-backward', current: false },
@@ -146,8 +150,8 @@ async function copyUrl() {
               <div class="onair-title" :class="{ muted: !onAir }">{{ nowTitle || t('monitor.silence') }}</div>
               <div v-if="nowArtist" class="onair-artist">{{ nowArtist }}</div>
             </div>
-            <span v-if="snap?.currentPlaylistName" class="chip">
-              <i class="pi pi-list" /> {{ snap.currentPlaylistName }}</span>
+            <span v-if="lineLabel(snap?.currentLine)" class="chip">
+              <i class="pi pi-list" /> {{ lineLabel(snap.currentLine) }}</span>
           </div>
           <div class="bar"><div class="fill" :style="{ width: progress + '%' }" /></div>
           <div class="times muted">
@@ -196,7 +200,7 @@ async function copyUrl() {
         <div class="stat"><span>{{ t('monitor.icecast') }}</span>
           <Tag :severity="snap?.icecastConnected ? 'success' : 'danger'" :value="snap?.icecastConnected ? t('monitor.connected') : t('monitor.offline')" /></div>
         <div class="stat"><span>{{ t('monitor.listeners') }}</span><b>{{ snap?.listeners ?? 0 }}</b></div>
-        <div class="stat"><span>{{ t('monitor.playlist') }}</span><b>{{ snap?.currentPlaylistName || '—' }}</b></div>
+        <div class="stat"><span>{{ t('monitor.line') }}</span><b>{{ lineLabel(snap?.currentLine) || '—' }}</b></div>
       </div>
 
       <div class="card">

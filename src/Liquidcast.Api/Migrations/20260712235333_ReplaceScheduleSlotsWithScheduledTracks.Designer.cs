@@ -3,6 +3,7 @@ using System;
 using Liquidcast.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Liquidcast.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260712235333_ReplaceScheduleSlotsWithScheduledTracks")]
+    partial class ReplaceScheduleSlotsWithScheduledTracks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -277,20 +280,6 @@ namespace Liquidcast.Api.Migrations
                     b.HasIndex("TrackId");
 
                     b.ToTable("PlaylistItems");
-                });
-
-            modelBuilder.Entity("Liquidcast.Api.Models.ScheduleLine", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ScheduleLines");
                 });
 
             modelBuilder.Entity("Liquidcast.Api.Models.ScheduledTrack", b =>

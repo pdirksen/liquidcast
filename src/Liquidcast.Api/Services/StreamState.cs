@@ -10,14 +10,14 @@ public class StreamState
     public bool FallbackActive { get; set; }
     public bool SchedulerEnabled { get; set; } = true;
 
-    public int? CurrentSlotId { get; set; }
-    public int? CurrentPlaylistId { get; set; }
-    public string? CurrentPlaylistName { get; set; }
+    public int? CurrentEntryId { get; set; }
+    /// <summary>Timeline line of the current entry: 0 = fallback line, 1..4 = priority.</summary>
+    public int? CurrentLine { get; set; }
 
-    /// <summary>When no slot is currently active, the next upcoming slot's start time and
-    /// playlist name — lets the Monitor page show what's coming up during a gap/fallback.</summary>
-    public DateTime? NextSlotStartUtc { get; set; }
-    public string? NextPlaylistName { get; set; }
+    /// <summary>When no entry is currently active, the next upcoming entry's start time and
+    /// track label — lets the Monitor page show what's coming up during a gap/fallback.</summary>
+    public DateTime? NextStartUtc { get; set; }
+    public string? NextTrackLabel { get; set; }
 
     /// <summary>On-air metadata as reported by Liquidsoap (meta.now).</summary>
     public string? OnAir { get; set; }
@@ -35,8 +35,8 @@ public class StreamState
 
     public MonitorSnapshot Snapshot() => new(
         LiquidsoapUp, IcecastConnected, Listeners, FallbackActive, SchedulerEnabled,
-        CurrentSlotId, CurrentPlaylistId, CurrentPlaylistName,
-        NextSlotStartUtc, NextPlaylistName,
+        CurrentEntryId, CurrentLine,
+        NextStartUtc, NextTrackLabel,
         OnAir, CurrentTitle, CurrentArtist, CurrentDurationSec, CurrentStartedUtc,
         Previous, PreviousStartedUtc, UpNext.ToList(), DateTime.UtcNow);
 }
@@ -47,11 +47,10 @@ public record MonitorSnapshot(
     int Listeners,
     bool FallbackActive,
     bool SchedulerEnabled,
-    int? CurrentSlotId,
-    int? CurrentPlaylistId,
-    string? CurrentPlaylistName,
-    DateTime? NextSlotStartUtc,
-    string? NextPlaylistName,
+    int? CurrentEntryId,
+    int? CurrentLine,
+    DateTime? NextStartUtc,
+    string? NextTrackLabel,
     string? OnAir,
     string? CurrentTitle,
     string? CurrentArtist,

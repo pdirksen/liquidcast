@@ -236,6 +236,10 @@ public class TrackService
         if (referenced)
             throw new InvalidOperationException("Track is used in one or more playlists.");
 
+        bool scheduled = await _db.ScheduledTracks.AnyAsync(s => s.TrackId == id, ct);
+        if (scheduled)
+            throw new InvalidOperationException("Track is scheduled.");
+
         _db.Tracks.Remove(track);
         await _db.SaveChangesAsync(ct);
         try { if (File.Exists(track.StoredPath)) File.Delete(track.StoredPath); }
