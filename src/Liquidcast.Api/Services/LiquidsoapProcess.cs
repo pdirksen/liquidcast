@@ -55,6 +55,7 @@ public partial class LiquidsoapProcess : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _cfg.EnsureDirectories();
+        KillOrphanFromPreviousRun();
         _supervisorCts = new CancellationTokenSource();
         _logDrainTask = Task.Run(() => DrainLogQueueAsync(_supervisorCts.Token));
         _supervisorTask = Task.Run(() => SuperviseAsync(_supervisorCts.Token));
@@ -76,6 +77,34 @@ public partial class LiquidsoapProcess : IHostedService
             try { await _logDrainTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken); }
             catch { /* shutting down */ }
         }
+        try { File.Delete(PidFilePath); } catch { /* best effort */ }
+    }
+
+    private string PidFilePath => Path.Combine(_cfg.DataPathAbsolute, "liquidsoap.pid");
+
+    /// <summary>Kills a Liquidsoap instance left over from a previous API process that died
+    /// without a graceful shutdown. Such an orphan keeps the Icecast mount and the control
+    /// port, so the fresh instance would loop on "409 Conflict" while listeners keep hearing
+    /// the orphan's (outdated) script.</summary>
+    private void KillOrphanFromPreviousRun()
+    {
+        try
+        {
+            if (!File.Exists(PidFilePath)) return;
+            if (int.TryParse(File.ReadAllText(PidFilePath).Trim(), out var pid))
+            {
+                using var p = Process.GetProcessById(pid); // throws if already gone
+                // Name check: the PID may have been reused by an unrelated process — leave that alone.
+                if (p.ProcessName.Contains("liquidsoap", StringComparison.OrdinalIgnoreCase))
+                {
+                    _log.LogWarning("Killing orphaned Liquidsoap (pid {Pid}) from a previous run", pid);
+                    p.Kill(entireProcessTree: true);
+                    p.WaitForExit(5000);
+                }
+            }
+        }
+        catch { /* already gone — nothing to do */ }
+        finally { try { File.Delete(PidFilePath); } catch { /* best effort */ } }
     }
 
     private async Task SuperviseAsync(CancellationToken ct)
@@ -148,6 +177,8 @@ public partial class LiquidsoapProcess : IHostedService
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
         _proc = proc;
+        // Recorded so the next API start can reap this child if we die without StopAsync.
+        try { File.WriteAllText(PidFilePath, proc.Id.ToString()); } catch { /* best effort */ }
     }
 
     /// <summary>Non-blocking: hands the line to the drain task. Never awaits or blocks, so the
