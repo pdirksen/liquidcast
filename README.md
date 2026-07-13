@@ -79,7 +79,10 @@ organized into subfolders), `fallback/` (loose MP3s for the fallback playlist),
    with hard-cut or crossfade boundaries.
 4. **Monitor** — live now-playing, queue, listener count, connection state, and
    Skip / Restart / scheduler toggle controls (live over SignalR).
-5. **Settings** — Icecast target, crossfade defaults, fallback (silence or
+5. **Statistics** — listener trends (peak/avg by hour-of-day and weekday) and
+   play history (top tracks/artists, plays per day, total airtime), computed
+   in the browser's timezone.
+6. **Settings** — Icecast target, crossfade defaults, fallback (silence or
    playlist), bitrate, Liquidsoap process options, and scheduled DB backups
    (target folder, daily time, retention). Saving connection/process settings
    regenerates the script and restarts Liquidsoap (a brief blip); backups can
