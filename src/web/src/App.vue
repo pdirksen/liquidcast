@@ -15,14 +15,18 @@ const { t, locale } = useI18n()
 
 const showChrome = computed(() => auth.user && route.name !== 'login')
 
-// "Tracks" and "Playlists" stay literal in every language.
-const nav = computed(() => [
-  { to: '/monitor', label: t('nav.monitor'), icon: 'pi-chart-bar' },
-  { to: '/stats', label: t('nav.stats'), icon: 'pi-chart-line' },
-  { to: '/tracks', label: 'Tracks', icon: 'pi-database' },
-  { to: '/playlists', label: 'Playlists', icon: 'pi-list' },
-  { to: '/schedule', label: t('nav.schedule'), icon: 'pi-calendar' },
-  { to: '/settings', label: t('nav.settings'), icon: 'pi-cog' },
+// Two groups: observe (monitor/stats), then the content pipeline. Settings lives
+// on the right as a gear. "Tracks" and "Playlists" stay literal in every language.
+const navGroups = computed(() => [
+  [
+    { to: '/monitor', label: t('nav.monitor'), icon: 'pi-chart-bar' },
+    { to: '/stats', label: t('nav.stats'), icon: 'pi-chart-line' },
+  ],
+  [
+    { to: '/tracks', label: 'Tracks', icon: 'pi-database' },
+    { to: '/playlists', label: 'Playlists', icon: 'pi-list' },
+    { to: '/schedule', label: t('nav.schedule'), icon: 'pi-calendar' },
+  ],
 ])
 
 const locales = LOCALES
@@ -45,11 +49,17 @@ function flagSrc(code) {
     <header v-if="showChrome" class="topbar">
       <div class="brand"><i class="pi pi-wifi" /> Liquidcast</div>
       <nav class="nav">
-        <RouterLink v-for="n in nav" :key="n.to" :to="n.to" class="navlink">
-          <i :class="['pi', n.icon]" /> {{ n.label }}
-        </RouterLink>
+        <template v-for="(group, gi) in navGroups" :key="gi">
+          <span v-if="gi > 0" class="nav-divider" />
+          <RouterLink v-for="n in group" :key="n.to" :to="n.to" class="navlink">
+            <i :class="['pi', n.icon]" /> {{ n.label }}
+          </RouterLink>
+        </template>
       </nav>
       <div class="spacer" />
+      <RouterLink to="/settings" class="gear" :title="t('nav.settings')">
+        <i class="pi pi-cog" />
+      </RouterLink>
       <AccountMenu />
       <Select v-model="currentLocale" :options="locales" optionValue="code" class="lang">
         <template #value="{ value }">
@@ -81,6 +91,11 @@ function flagSrc(code) {
 }
 .navlink:hover { background: var(--surface-3); color: var(--text-strong); }
 .navlink.router-link-active { background: var(--accent-soft); color: var(--accent-contrast); }
+.nav-divider { width: 1px; align-self: stretch; margin: .35rem .5rem; background: var(--border); }
+.gear { display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 8px; padding: .4rem .55rem; margin-right: .25rem; }
+.gear:hover { color: var(--text-strong); border-color: var(--border-strong); }
+.gear.router-link-active { color: var(--accent-contrast); background: var(--accent-soft); border-color: var(--accent); }
 .lang { margin-right: .5rem; }
 .lang :deep(.p-select-dropdown) { width: 1.6rem; }
 .flag { width: 22px; height: 16px; border-radius: 2px; object-fit: cover; display: block; }
