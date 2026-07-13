@@ -1,0 +1,21 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Liquidcast icon">
+  <defs>
+    <linearGradient id="lc-liquid" x1="30" y1="14" x2="92" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38e0f0"/>
+      <stop offset="0.55" stop-color="#22a7f0"/>
+      <stop offset="1" stop-color="#3b5bf6"/>
+    </linearGradient>
+  </defs>
+  <!-- droplet -->
+  <path d="M60 12
+           C 74 34, 94 54, 94 74
+           A 34 34 0 1 1 26 74
+           C 26 54, 46 34, 60 12 Z"
+        fill="url(#lc-liquid)"/>
+  <!-- broadcast waves (knockout) origin near lower-center, opening upward -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round">
+    <circle cx="60" cy="84" r="5.5" fill="#ffffff" stroke="none"/>
+    <path d="M45 76 A 18 18 0 0 1 75 76" stroke-width="6" opacity="0.95"/>
+    <path d="M38 68 A 28 28 0 0 1 82 68" stroke-width="6" opacity="0.7"/>
+  </g>
+</svg>

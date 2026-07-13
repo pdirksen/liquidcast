@@ -1,4 +1,10 @@
-# Liquidcast
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/logos/liquidcast-logo-horizontal-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="branding/logos/liquidcast-logo-horizontal-light.svg">
+    <img src="branding/logos/liquidcast-logo-horizontal-light.svg" alt="Liquidcast" width="380">
+  </picture>
+</p>
 
 A self-hostable webradio platform. Arrange MP3 tracks on time-based playlists,
 schedule them days ahead, and stream the result to Icecast with crossfades and a
