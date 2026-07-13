@@ -58,6 +58,9 @@ public class ScriptGenerator
             sb.AppendLine("settings.server.telnet.bind_addr.set(\"127.0.0.1\")");
             sb.AppendLine($"settings.server.telnet.port.set({s.TelnetPort})");
         }
+        // The backend holds one persistent control connection; without this Liquidsoap
+        // closes idle server sessions after 30s (e.g. while the scheduler is disabled).
+        sb.AppendLine("settings.server.timeout.set(-1.)");
         sb.AppendLine();
 
         // --- main just-in-time queue: backend pushes tracks via "main.push <annotate-uri>" ---
