@@ -1,0 +1,5 @@
+# Everything is checked out and committed with LF, regardless of core.autocrlf —
+# the repo also runs in Docker/Linux and shell scripts break on CRLF.
+* text=auto eol=lf
+
+*.png binary
