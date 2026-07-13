@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
@@ -13,6 +14,7 @@ import { useToast } from 'primevue/usetoast'
 const { t } = useI18n()
 const toast = useToast()
 const auth = useAuth()
+const router = useRouter()
 
 const menu = ref(null)
 function toggleMenu(event) { menu.value.toggle(event) }
@@ -47,10 +49,17 @@ async function openAbout() {
   }
 }
 
+async function logout() {
+  await auth.logout()
+  router.push('/login')
+}
+
 const menuItems = computed(() => [
   { label: t('account.changeProfile'), icon: 'pi pi-user', command: openProfile },
   { label: t('account.changeCredentials'), icon: 'pi pi-lock', command: openCredentials },
   { label: t('account.about'), icon: 'pi pi-info-circle', command: openAbout },
+  { separator: true },
+  { label: t('account.logout'), icon: 'pi pi-sign-out', command: logout },
 ])
 
 function errorMessage(e, fallbackKey) {

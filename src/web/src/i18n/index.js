@@ -91,6 +91,7 @@ const messages = {
       restoreSuccess: 'Backup restored', restoreFailed: 'Restore failed', saved: 'Backup settings saved' },
     account: {
       changeProfile: 'Change profile', changeCredentials: 'Change password', about: 'About',
+      logout: 'Sign out',
       currentPassword: 'Current password', newUsername: 'New username', newPassword: 'New password',
       confirmPassword: 'Confirm password', profileUpdated: 'Profile updated',
       credentialsUpdated: 'Password changed', passwordMismatch: 'Passwords do not match',
@@ -185,6 +186,7 @@ const messages = {
       restoreSuccess: 'Backup wiederhergestellt', restoreFailed: 'Wiederherstellung fehlgeschlagen', saved: 'Backup-Einstellungen gespeichert' },
     account: {
       changeProfile: 'Profil ändern', changeCredentials: 'Passwort ändern', about: 'Über',
+      logout: 'Abmelden',
       currentPassword: 'Aktuelles Passwort', newUsername: 'Neuer Benutzername', newPassword: 'Neues Passwort',
       confirmPassword: 'Passwort bestätigen', profileUpdated: 'Profil aktualisiert',
       credentialsUpdated: 'Passwort geändert', passwordMismatch: 'Passwörter stimmen nicht überein',
@@ -279,6 +281,7 @@ const messages = {
       restoreSuccess: 'Copia restaurada', restoreFailed: 'Error al restaurar', saved: 'Ajustes de copia guardados' },
     account: {
       changeProfile: 'Cambiar perfil', changeCredentials: 'Cambiar contraseña', about: 'Acerca de',
+      logout: 'Cerrar sesión',
       currentPassword: 'Contraseña actual', newUsername: 'Nuevo usuario', newPassword: 'Nueva contraseña',
       confirmPassword: 'Confirmar contraseña', profileUpdated: 'Perfil actualizado',
       credentialsUpdated: 'Contraseña cambiada', passwordMismatch: 'Las contraseñas no coinciden',

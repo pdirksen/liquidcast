@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from './stores/auth'
 import { LOCALES, setLocale } from './i18n'
@@ -10,7 +10,6 @@ import Select from 'primevue/select'
 import AccountMenu from './components/AccountMenu.vue'
 
 const auth = useAuth()
-const router = useRouter()
 const route = useRoute()
 const { t, locale } = useI18n()
 
@@ -36,10 +35,6 @@ function flagSrc(code) {
   return c ? `https://flagcdn.com/h20/${c}.png` : ''
 }
 
-async function logout() {
-  await auth.logout()
-  router.push('/login')
-}
 </script>
 
 <template>
@@ -64,7 +59,6 @@ async function logout() {
           <span class="flag-label">{{ option.label }}</span>
         </template>
       </Select>
-      <button class="logout" @click="logout"><i class="pi pi-sign-out" /></button>
     </header>
     <main><RouterView /></main>
   </div>
@@ -91,6 +85,4 @@ async function logout() {
 .flag { width: 22px; height: 16px; border-radius: 2px; object-fit: cover; display: block; }
 .flag-label { margin-left: .5rem; }
 :deep(.p-select-option) { display: flex; align-items: center; }
-.logout { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; padding: .4rem .55rem; cursor: pointer; }
-.logout:hover { color: var(--text-strong); border-color: var(--border-strong); }
 </style>
