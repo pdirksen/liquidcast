@@ -5,6 +5,7 @@ const routes = [
   { path: '/login', name: 'login', component: () => import('../views/Login.vue'), meta: { public: true } },
   { path: '/', redirect: '/monitor' },
   { path: '/monitor', name: 'monitor', component: () => import('../views/Monitor.vue') },
+  { path: '/stats', name: 'stats', component: () => import('../views/Statistics.vue') },
   { path: '/tracks', name: 'tracks', component: () => import('../views/TrackLibrary.vue') },
   { path: '/playlists', name: 'playlists', component: () => import('../views/Playlists.vue') },
   { path: '/playlists/:id', name: 'playlist-editor', component: () => import('../views/PlaylistEditor.vue') },

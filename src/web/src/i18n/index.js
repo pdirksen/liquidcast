@@ -6,7 +6,16 @@ const messages = {
   en: {
     common: { save: 'Save', cancel: 'Cancel', delete: 'Delete', create: 'Create',
       search: 'Search…', none: '— none —' },
-    nav: { monitor: 'Monitor', schedule: 'Schedule', settings: 'Settings' },
+    nav: { monitor: 'Monitor', schedule: 'Schedule', settings: 'Settings', stats: 'Statistics' },
+    stats: {
+      title: 'Statistics', listeners: 'Listeners', plays: 'Plays',
+      range7d: '7 days', range30d: '30 days', range1y: '1 year',
+      peakListeners: 'Peak listeners', avgListeners: 'Avg listeners',
+      totalPlays: 'Total plays', totalAirtime: 'Total airtime', distinctTracks: 'Distinct tracks',
+      byHour: 'By hour of day', byWeekday: 'By weekday', playsPerDay: 'Plays per day',
+      topTracks: 'Top tracks', topArtists: 'Top artists',
+      track: 'Track', artist: 'Artist', playsWord: 'Plays', airtime: 'Airtime',
+      avg: 'Avg', peak: 'Peak', noData: 'No data yet' },
     login: { subtitle: 'Sign in to manage your stream', username: 'Username',
       password: 'Password', signIn: 'Sign in', invalid: 'Invalid username or password.' },
     monitor: {
@@ -101,7 +110,16 @@ const messages = {
   de: {
     common: { save: 'Speichern', cancel: 'Abbrechen', delete: 'Löschen', create: 'Erstellen',
       search: 'Suchen…', none: '— keine —' },
-    nav: { monitor: 'Monitor', schedule: 'Zeitplan', settings: 'Einstellungen' },
+    nav: { monitor: 'Monitor', schedule: 'Zeitplan', settings: 'Einstellungen', stats: 'Statistiken' },
+    stats: {
+      title: 'Statistiken', listeners: 'Hörer', plays: 'Wiedergaben',
+      range7d: '7 Tage', range30d: '30 Tage', range1y: '1 Jahr',
+      peakListeners: 'Hörer-Spitze', avgListeners: 'Hörer im Schnitt',
+      totalPlays: 'Wiedergaben gesamt', totalAirtime: 'Sendezeit gesamt', distinctTracks: 'Verschiedene Titel',
+      byHour: 'Nach Tagesstunde', byWeekday: 'Nach Wochentag', playsPerDay: 'Wiedergaben pro Tag',
+      topTracks: 'Top-Titel', topArtists: 'Top-Interpreten',
+      track: 'Titel', artist: 'Interpret', playsWord: 'Wiedergaben', airtime: 'Sendezeit',
+      avg: 'Schnitt', peak: 'Spitze', noData: 'Noch keine Daten' },
     login: { subtitle: 'Anmelden, um deinen Stream zu verwalten', username: 'Benutzername',
       password: 'Passwort', signIn: 'Anmelden', invalid: 'Ungültiger Benutzername oder Passwort.' },
     monitor: {
@@ -196,7 +214,16 @@ const messages = {
   es: {
     common: { save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar', create: 'Crear',
       search: 'Buscar…', none: '— ninguna —' },
-    nav: { monitor: 'Monitor', schedule: 'Programación', settings: 'Ajustes' },
+    nav: { monitor: 'Monitor', schedule: 'Programación', settings: 'Ajustes', stats: 'Estadísticas' },
+    stats: {
+      title: 'Estadísticas', listeners: 'Oyentes', plays: 'Reproducciones',
+      range7d: '7 días', range30d: '30 días', range1y: '1 año',
+      peakListeners: 'Pico de oyentes', avgListeners: 'Oyentes promedio',
+      totalPlays: 'Reproducciones totales', totalAirtime: 'Tiempo en antena', distinctTracks: 'Pistas distintas',
+      byHour: 'Por hora del día', byWeekday: 'Por día de la semana', playsPerDay: 'Reproducciones por día',
+      topTracks: 'Pistas principales', topArtists: 'Artistas principales',
+      track: 'Pista', artist: 'Artista', playsWord: 'Reproducciones', airtime: 'En antena',
+      avg: 'Promedio', peak: 'Pico', noData: 'Aún no hay datos' },
     login: { subtitle: 'Inicia sesión para gestionar tu transmisión', username: 'Usuario',
       password: 'Contraseña', signIn: 'Iniciar sesión', invalid: 'Usuario o contraseña no válidos.' },
     monitor: {

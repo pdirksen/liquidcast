@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<BackupSetting> BackupSettings => Set<BackupSetting>();
     public DbSet<ListenerSample> ListenerSamples => Set<ListenerSample>();
+    public DbSet<PlayHistory> PlayHistory => Set<PlayHistory>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -44,6 +45,13 @@ public class AppDbContext : DbContext
 
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
         b.Entity<ListenerSample>().HasIndex(s => s.SampleUtc);
+
+        b.Entity<PlayHistory>()
+            .HasOne(p => p.Track)
+            .WithMany()
+            .HasForeignKey(p => p.TrackId)
+            .OnDelete(DeleteBehavior.SetNull);
+        b.Entity<PlayHistory>().HasIndex(p => p.StartedUtc);
 
         // Singleton settings rows.
         b.Entity<AppSetting>().HasData(new AppSetting { Id = 1 });

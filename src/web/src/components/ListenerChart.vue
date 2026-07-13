@@ -2,6 +2,7 @@
 import { ref, shallowRef, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
+import { cssVar, hexA } from '../utils/chart'
 import Select from 'primevue/select'
 import {
   Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip,
@@ -22,11 +23,6 @@ const canvas = ref(null)
 const chart = shallowRef(null)
 const hasData = ref(true)
 let points = []
-
-// Read a CSS custom property off the document root (the app is single-theme dark).
-function cssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-}
 
 // x-axis label for a bucket timestamp — time-of-day for 24h, date otherwise.
 function labelFor(iso) {
@@ -118,15 +114,6 @@ function render() {
       },
     },
   })
-}
-
-// Turn "#rrggbb" into an rgba() with the given alpha (chart.js gradient stops).
-function hexA(hex, alpha) {
-  const m = hex.replace('#', '')
-  const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m
-  const n = parseInt(full, 16)
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 watch(range, load)

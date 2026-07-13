@@ -39,7 +39,7 @@ public class SchedulerService : BackgroundService
         _log = log;
     }
 
-    private record PushItem(string Uri, string? Title, string? Artist, double DurationSec);
+    private record PushItem(string Uri, string? Title, string? Artist, double DurationSec, int TrackId, int Line);
 
     /// <summary>Lead time for queueing the next adjacent entry so crossfades have material.</summary>
     private double PrepushSec => Math.Max(20, _cfg.Settings.DefaultCrossfadeSec + 5);
@@ -81,7 +81,7 @@ public class SchedulerService : BackgroundService
         var winner = ResolveWinner(active);
         await ApplyWinnerAsync(winner, now, ct);
         await UpdateNextAsync(db, now, ct);
-        await UpdateOnAirAsync(ct);
+        await UpdateOnAirAsync(db, ct);
         if (_current is not null)
             await PrepushNextAsync(entries, now, ct);
     }
@@ -212,7 +212,8 @@ public class SchedulerService : BackgroundService
 
         var resp = await _ls.CommandAsync($"main.push {uri}", ct);
         _pushed.Enqueue(new PushItem(uri, track.Title, track.Artist,
-            Math.Max(0, ScheduleMath.EffectiveDurationSec(entry) - cueShiftSec)));
+            Math.Max(0, ScheduleMath.EffectiveDurationSec(entry) - cueShiftSec),
+            entry.TrackId, entry.Line));
 
         // main.push answers with the request id — kept so a pre-push can be cancelled.
         var rid = resp?.Trim().Split(new[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
@@ -235,8 +236,9 @@ public class SchedulerService : BackgroundService
         _next = null;
     }
 
-    /// <summary>Reads Liquidsoap's current on-air metadata and updates timing for the monitor.</summary>
-    private async Task UpdateOnAirAsync(CancellationToken ct)
+    /// <summary>Reads Liquidsoap's current on-air metadata, updates timing for the monitor
+    /// and records the play in history when a pushed track goes on air.</summary>
+    private async Task UpdateOnAirAsync(AppDbContext db, CancellationToken ct)
     {
         string onAir;
         try { onAir = (await _ls.CommandAsync("meta.now", ct)).Trim(); }
@@ -270,6 +272,26 @@ public class SchedulerService : BackgroundService
         _state.CurrentDurationSec = match?.DurationSec ?? 0;
         _state.CurrentStartedUtc = DateTime.UtcNow;
         _state.UpNext = _pushed.Select(i => Label(i.Title, i.Artist)).ToList();
+
+        // A matched push = a scheduled track went on air → one history row. No match
+        // (fallback playlist, silence) writes nothing. Inherits the bookkeeping caveats
+        // above: an identical consecutive label misses its boundary (no second row), and
+        // the count==1 last-resort dequeue can attribute a foreign label to the push.
+        if (match is not null)
+        {
+            db.PlayHistory.Add(new PlayHistory
+            {
+                TrackId = match.TrackId,
+                Title = match.Title,
+                Artist = match.Artist,
+                DurationSec = match.DurationSec,
+                Line = match.Line,
+                StartedUtc = DateTime.UtcNow,
+            });
+            // FK race with a track deleted after push: lose the row, never the tick.
+            try { await db.SaveChangesAsync(ct); }
+            catch (Exception ex) { _log.LogDebug(ex, "Could not record play history"); }
+        }
     }
 
     private static string Label(string? title, string? artist) =>

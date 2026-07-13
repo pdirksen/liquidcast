@@ -194,6 +194,7 @@ app.MapPlaylists();
 app.MapSchedule();
 app.MapSettings();
 app.MapStream();
+app.MapStats();
 app.MapBackup();
 app.MapHub<MonitorHub>("/hubs/monitor");
 

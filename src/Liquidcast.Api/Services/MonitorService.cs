@@ -11,6 +11,8 @@ public class MonitorService : BackgroundService
 {
     /// <summary>Listener samples older than this are pruned (covers the "month" chart range + margin).</summary>
     private static readonly TimeSpan Retention = TimeSpan.FromDays(40);
+    /// <summary>Play-history rows are kept a year (stats page "year" range).</summary>
+    private static readonly TimeSpan PlayRetention = TimeSpan.FromDays(365);
 
     private readonly IcecastClient _icecast;
     private readonly StreamState _state;
@@ -74,6 +76,8 @@ public class MonitorService : BackgroundService
             _lastPruneHour = hour;
             var cutoff = now - Retention;
             await db.ListenerSamples.Where(s => s.SampleUtc < cutoff).ExecuteDeleteAsync(ct);
+            var playCutoff = now - PlayRetention;
+            await db.PlayHistory.Where(p => p.StartedUtc < playCutoff).ExecuteDeleteAsync(ct);
         }
 
         await db.SaveChangesAsync(ct);

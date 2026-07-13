@@ -18,6 +18,7 @@ const showChrome = computed(() => auth.user && route.name !== 'login')
 // "Tracks" and "Playlists" stay literal in every language.
 const nav = computed(() => [
   { to: '/monitor', label: t('nav.monitor'), icon: 'pi-chart-bar' },
+  { to: '/stats', label: t('nav.stats'), icon: 'pi-chart-line' },
   { to: '/tracks', label: 'Tracks', icon: 'pi-database' },
   { to: '/playlists', label: 'Playlists', icon: 'pi-list' },
   { to: '/schedule', label: t('nav.schedule'), icon: 'pi-calendar' },
