@@ -10,6 +10,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import { useToast } from 'primevue/usetoast'
+import logo from '../assets/liquidcast-logo-horizontal-dark.svg'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -147,6 +148,7 @@ async function submitCredentials() {
   </Dialog>
 
   <Dialog v-model:visible="showAbout" :header="t('account.about')" modal :style="{ width: '26rem' }">
+    <img :src="logo" alt="Liquidcast" class="about-logo" />
     <p><strong>Liquidcast</strong> {{ t('account.version') }} {{ version }}</p>
     <p class="muted" style="font-size:.82rem">
       <a href="https://github.com/pdirksen/liquidcast" target="_blank" rel="noopener">github.com/pdirksen/liquidcast</a>
@@ -187,6 +189,7 @@ SOFTWARE.</pre>
 }
 .account-trigger:hover { background: var(--surface-3); color: var(--text-strong); }
 .field { margin-bottom: .85rem; }
+.about-logo { display: block; width: 100%; max-width: 22rem; margin: 0 auto 1rem; border-radius: 12px; }
 .field label { display: block; font-size: .85rem; color: var(--text-muted); margin-bottom: .3rem; }
 .license {
   white-space: pre-wrap; font-size: .72rem; line-height: 1.4; max-height: 12rem; overflow-y: auto;
