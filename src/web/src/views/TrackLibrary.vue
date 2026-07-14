@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { fmtDuration, fmtBytes } from '../util'
@@ -39,7 +39,7 @@ async function load() {
     loading.value = false
   }
 }
-onMounted(load)
+onMounted(() => { load(); pollScan() })
 
 // Build a folder tree from each track's relativePath (e.g. "Shows/Morning/a.mp3").
 const treeNodes = computed(() => {
@@ -79,19 +79,51 @@ const treeNodes = computed(() => {
   return roots
 })
 
-// Default to fully expanded so the whole library is visible.
-watch(treeNodes, (nodes) => {
+// Collapsed by default (thousands of tracks would otherwise all render into the DOM).
+// A search auto-expands so matches inside folders are visible; clearing it collapses again.
+function allFolderKeys() {
   const keys = {}
   const walk = (arr) => arr.forEach((n) => { if (n.data.isFolder) { keys[n.key] = true; walk(n.children) } })
-  walk(nodes)
-  expandedKeys.value = keys
-}, { immediate: true })
+  walk(treeNodes.value)
+  return keys
+}
+const expandAll = () => { expandedKeys.value = allFolderKeys() }
+const collapseAll = () => { expandedKeys.value = {} }
+
+let lastSearch = ''
+watch(loading, (isLoading) => {
+  if (isLoading) return // react once results are in
+  const q = search.value.trim()
+  if (q) expandAll()
+  else if (lastSearch) collapseAll()
+  lastSearch = q
+})
+
+// --- background scan status (startup scan + rescan run server-side, async) ---
+const scan = ref(null)
+let scanTimer = null
+
+async function pollScan() {
+  try {
+    const wasScanning = scan.value?.scanning
+    const { data } = await api.get('/tracks/scan-status')
+    scan.value = data
+    if (data.scanning) {
+      scanTimer = setTimeout(pollScan, 2000)
+    } else if (wasScanning) {
+      toast.add({ severity: 'success', summary: t('tracks.rescanned', { added: data.added, updated: data.updated }), life: 3000 })
+      await load()
+    }
+  } catch { /* transient — next trigger re-polls */ }
+}
+onUnmounted(() => clearTimeout(scanTimer))
 
 async function rescan() {
   try {
-    const { data } = await api.post('/tracks/rescan')
-    toast.add({ severity: 'success', summary: t('tracks.rescanned', { added: data.added, updated: data.updated }), life: 3000 })
-    await load()
+    await api.post('/tracks/rescan')
+    scan.value = { scanning: true, scanned: 0, added: 0, updated: 0 }
+    clearTimeout(scanTimer)
+    scanTimer = setTimeout(pollScan, 1000)
   } catch {
     toast.add({ severity: 'error', summary: t('tracks.rescanFailed'), life: 4000 })
   }
@@ -213,8 +245,13 @@ async function onDrop(event, folder) {
         <InputText v-model="search" :placeholder="t('common.search')" @keyup.enter="load" />
       </span>
       <Button icon="pi pi-search" text @click="load" />
-      <Button icon="pi pi-refresh" text :label="t('tracks.rescan')" @click="rescan" />
+      <Button icon="pi pi-refresh" text :label="t('tracks.rescan')" :disabled="scan?.scanning" @click="rescan" />
       <Button icon="pi pi-plus" text :label="t('tracks.newFolder')" @click="showNewFolder = true" />
+      <Button icon="pi pi-angle-double-down" text v-tooltip.bottom="t('tracks.expandAll')" @click="expandAll" />
+      <Button icon="pi pi-angle-double-up" text v-tooltip.bottom="t('tracks.collapseAll')" @click="collapseAll" />
+      <span v-if="scan?.scanning" class="scanning">
+        <i class="pi pi-spin pi-spinner" /> {{ t('tracks.scanning', { n: scan.scanned }) }}
+      </span>
       <span class="spacer" />
       <InputText v-model="uploadFolder" :placeholder="t('tracks.folderPlaceholder')" style="width:12rem" />
       <FileUpload mode="basic" :multiple="true" accept="audio/mpeg,.mp3" :auto="true"
@@ -230,7 +267,8 @@ async function onDrop(event, folder) {
     <!-- Whole-row drop targets: delegation resolves the folder from the row under the cursor,
          so dropping anywhere on a folder row works (not just the name cell). -->
     <div @dragover.prevent="onTreeDragOver" @drop.prevent="onTreeDrop">
-    <TreeTable :value="treeNodes" v-model:expandedKeys="expandedKeys" :loading="loading" class="mt" size="small">
+    <TreeTable :value="treeNodes" v-model:expandedKeys="expandedKeys" :loading="loading" class="mt" size="small"
+      paginator :rows="100" :rowsPerPageOptions="[50, 100, 250]">
       <Column field="name" :header="t('tracks.title_col')" expander>
         <template #body="{ node }">
           <span v-if="node.data.isFolder" class="fnode" :class="{ over: dragOverKey === node.key }"
@@ -290,4 +328,5 @@ async function onDrop(event, folder) {
 .tnode .drag-handle { color: var(--text-muted); font-size: .8rem; }
 .fnode { display: flex; align-items: center; width: 100%; min-height: 1.8rem; border-radius: 6px; padding: 0 .35rem; }
 .fnode.over { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--accent); }
+.scanning { color: var(--text-muted); font-size: .85rem; display: inline-flex; align-items: center; gap: .4rem; }
 </style>

@@ -75,8 +75,14 @@ function clearLibrary() {
     accept: async () => {
       clearing.value = true
       try {
-        const { data } = await api.post('/tracks/clear')
-        toast.add({ severity: 'success', summary: t('settings.clearLibraryDone', { added: data.added }), life: 4000 })
+        // Returns 202 — the scan runs server-side; poll until it finishes.
+        await api.post('/tracks/clear')
+        let status
+        do {
+          await new Promise((r) => setTimeout(r, 2000))
+          status = (await api.get('/tracks/scan-status')).data
+        } while (status.scanning)
+        toast.add({ severity: 'success', summary: t('settings.clearLibraryDone', { added: status.added }), life: 4000 })
       } catch {
         toast.add({ severity: 'error', summary: t('settings.clearLibraryFailed'), life: 3000 })
       } finally {

@@ -22,12 +22,15 @@ const library = ref([])
 const search = ref('')
 const saving = ref(false)
 
-const filteredLibrary = computed(() => {
+// Cap rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
+const LIBRARY_CAP = 200
+const matches = computed(() => {
   const t = search.value.toLowerCase()
   return library.value.filter((x) =>
     !t || (x.title || '').toLowerCase().includes(t) || (x.artist || '').toLowerCase().includes(t) ||
     x.fileName.toLowerCase().includes(t))
 })
+const filteredLibrary = computed(() => matches.value.slice(0, LIBRARY_CAP))
 
 const totalDuration = computed(() => items.value.reduce((s, i) => s + (i.durationSec || 0), 0))
 
@@ -116,6 +119,9 @@ async function save() {
             </div>
           </template>
         </draggable>
+        <div v-if="matches.length > filteredLibrary.length" class="muted cap-hint">
+          {{ t('editor.libraryCapped', { shown: filteredLibrary.length, total: matches.length }) }}
+        </div>
       </div>
 
       <!-- Timeline: drop target + reorder -->
@@ -162,5 +168,6 @@ async function save() {
 .a { font-size: .8rem; }
 .idx { width: 1.4rem; text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .empty { padding: 2rem; text-align: center; }
+.cap-hint { padding: .5rem 1rem .7rem; font-size: .82rem; border-top: 1px solid var(--border); }
 @media (max-width: 850px) { .editor { grid-template-columns: 1fr; } }
 </style>

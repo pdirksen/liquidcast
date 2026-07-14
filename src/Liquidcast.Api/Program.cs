@@ -33,6 +33,8 @@ builder.Services.AddHttpClient();
 // Persistent Liquidsoap process + background workers.
 builder.Services.AddSingleton<LiquidsoapProcess>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<LiquidsoapProcess>());
+builder.Services.AddSingleton<LibraryScanService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<LibraryScanService>());
 builder.Services.AddHostedService<SchedulerService>();
 builder.Services.AddHostedService<MonitorService>();
 
@@ -110,6 +112,10 @@ builder.Services.AddRateLimiter(o =>
     });
 });
 
+// Gzip for API responses — /api/tracks serializes the whole library (default mime
+// list already includes application/json).
+builder.Services.AddResponseCompression();
+
 // Dev CORS for the Vite dev server.
 const string DevCors = "dev";
 builder.Services.AddCors(o => o.AddPolicy(DevCors, p => p
@@ -165,18 +171,14 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
-    // Reconcile the tracks table with the tracks dir so MP3s dropped into subfolders are ingested.
-    try
-    {
-        var sync = await sp.GetRequiredService<TrackService>().SyncFromDiskAsync(CancellationToken.None);
-        if (sync.Added > 0 || sync.Updated > 0)
-            startupLog.LogInformation("Track scan: {Added} added, {Updated} updated", sync.Added, sync.Updated);
-    }
-    catch (Exception ex) { startupLog.LogWarning(ex, "Track scan on startup failed"); }
+    // The initial track-library disk scan runs in the background via LibraryScanService,
+    // so boot does not block on large libraries.
 }
 
 if (app.Environment.IsDevelopment())
     app.UseCors(DevCors);
+
+app.UseResponseCompression();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

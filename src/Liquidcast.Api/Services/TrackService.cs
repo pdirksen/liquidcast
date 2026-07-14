@@ -83,9 +83,6 @@ public class TrackService
 
     public record SyncResult(int Added, int Updated);
 
-    /// <summary>Recursively scans TracksDir and reconciles the DB: fixes RelativePath on known
-    /// files and ingests MP3s found in subfolders (e.g. dropped in manually). Only unknown files
-    /// are hashed/parsed, so re-scanning an existing library is cheap.</summary>
     /// <summary>Wipes all track rows plus anything referencing them (playlist items, scheduled
     /// tracks) so a subsequent <see cref="SyncFromDiskAsync"/> rebuilds the library from scratch.
     /// Audio files on disk are left untouched.</summary>
@@ -96,17 +93,32 @@ public class TrackService
         await _db.Tracks.ExecuteDeleteAsync(ct);
     }
 
-    public async Task<SyncResult> SyncFromDiskAsync(CancellationToken ct)
+    /// <summary>Recursively scans TracksDir and reconciles the DB: fixes RelativePath on known
+    /// files and ingests MP3s found in subfolders (e.g. dropped in manually). Only unknown files
+    /// are hashed/parsed, so re-scanning an existing library is cheap. <paramref name="progress"/>
+    /// (scanned, added, updated) is invoked periodically during the walk.</summary>
+    public async Task<SyncResult> SyncFromDiskAsync(CancellationToken ct, Action<int, int, int>? progress = null)
     {
+        const int saveBatchSize = 200;   // keep SQLite write transactions short during big imports
+        const int progressEvery = 50;
+
         _cfg.EnsureDirectories();
-        int added = 0, updated = 0;
+        int scanned = 0, added = 0, updated = 0, unsaved = 0;
         var known = await _db.Tracks.ToDictionaryAsync(t => t.StoredPath, StringComparer.OrdinalIgnoreCase, ct);
+
+        // Hash → track map so dedup/move detection is a memory lookup instead of a DB query per
+        // file; also makes tracks added earlier in this same scan visible to later duplicates.
+        var byHash = new Dictionary<string, Track>(StringComparer.OrdinalIgnoreCase);
+        foreach (var t in known.Values)
+            if (t.Sha256 is not null) byHash.TryAdd(t.Sha256, t);
 
         foreach (var file in Directory.EnumerateFiles(_cfg.TracksDir, "*.mp3", SearchOption.AllDirectories))
         {
             ct.ThrowIfCancellationRequested();
             var name = Path.GetFileName(file);
             if (name.StartsWith('.')) continue; // skip .upload-*.tmp and other dotfiles
+
+            if (++scanned % progressEvery == 0) progress?.Invoke(scanned, added, updated);
 
             var rel = RelPath(file);
             if (known.TryGetValue(file, out var existing))
@@ -116,6 +128,7 @@ public class TrackService
                     existing.RelativePath = rel;
                     existing.FileName = name;
                     updated++;
+                    unsaved++;
                 }
                 continue;
             }
@@ -124,24 +137,24 @@ public class TrackService
             await using (var read = File.OpenRead(file))
                 hash = Convert.ToHexString(await SHA256.HashDataAsync(read, ct)).ToLowerInvariant();
 
-            var byHash = await _db.Tracks.FirstOrDefaultAsync(t => t.Sha256 == hash, ct);
-            if (byHash is not null)
+            if (byHash.TryGetValue(hash, out var sameContent))
             {
                 // Same content already known. If its recorded file is gone, this is a move —
                 // realign the row to the new location. If the original still exists, this is a
                 // genuine on-disk duplicate → ignore it (hash is identity, as upload dedup does).
-                if (!File.Exists(byHash.StoredPath))
+                if (!File.Exists(sameContent.StoredPath))
                 {
-                    byHash.StoredPath = file;
-                    byHash.RelativePath = rel;
-                    byHash.FileName = name;
+                    sameContent.StoredPath = file;
+                    sameContent.RelativePath = rel;
+                    sameContent.FileName = name;
                     updated++;
+                    unsaved++;
                 }
                 continue;
             }
 
             var meta = ReadMetadata(file);
-            _db.Tracks.Add(new Track
+            var track = new Track
             {
                 FileName = name,
                 StoredPath = file,
@@ -154,11 +167,20 @@ public class TrackService
                 SizeBytes = new FileInfo(file).Length,
                 Sha256 = hash,
                 UploadedAt = DateTime.UtcNow,
-            });
+            };
+            _db.Tracks.Add(track);
+            byHash.TryAdd(hash, track);
             added++;
+
+            if (++unsaved >= saveBatchSize)
+            {
+                await _db.SaveChangesAsync(ct);
+                unsaved = 0;
+            }
         }
 
-        if (added > 0 || updated > 0) await _db.SaveChangesAsync(ct);
+        if (unsaved > 0) await _db.SaveChangesAsync(ct);
+        progress?.Invoke(scanned, added, updated);
         return new SyncResult(added, updated);
     }
 

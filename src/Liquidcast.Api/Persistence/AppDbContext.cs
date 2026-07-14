@@ -21,6 +21,9 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        // Content hash is the dedup identity — looked up on upload and disk sync.
+        b.Entity<Track>().HasIndex(t => t.Sha256);
+
         b.Entity<PlaylistItem>()
             .HasOne(pi => pi.Playlist)
             .WithMany(p => p.Items)

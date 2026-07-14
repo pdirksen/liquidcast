@@ -24,7 +24,13 @@ public static class TrackEndpoints
                     t.FileName.ToLower().Contains(term) ||
                     t.RelativePath.ToLower().Contains(term));
             }
-            return Results.Ok(await query.OrderByDescending(t => t.UploadedAt).ToListAsync());
+            // Slim projection — the SPA never needs hash/absolute path, and at thousands of
+            // tracks the full entity roughly doubles the payload.
+            return Results.Ok(await query
+                .OrderByDescending(t => t.UploadedAt)
+                .Select(t => new TrackListDto(t.Id, t.FileName, t.RelativePath, t.Title, t.Artist,
+                    t.Album, t.DurationSec, t.Bitrate, t.SizeBytes))
+                .ToListAsync());
         });
 
         g.MapPost("/upload", async (HttpRequest request, TrackService svc, RuntimeConfig cfg, CancellationToken ct) =>
@@ -61,18 +67,21 @@ public static class TrackEndpoints
             return Results.Ok(results);
         }).DisableAntiforgery();
 
-        g.MapPost("/rescan", async (TrackService svc, CancellationToken ct) =>
+        // Scans run in the background (a first import of thousands of files takes minutes);
+        // the SPA polls /scan-status for progress and completion.
+        g.MapPost("/rescan", (LibraryScanService scans) =>
         {
-            var r = await svc.SyncFromDiskAsync(ct);
-            return Results.Ok(new { added = r.Added, updated = r.Updated });
+            scans.StartScan(clearFirst: false);
+            return Results.Accepted();
         });
 
-        g.MapPost("/clear", async (TrackService svc, CancellationToken ct) =>
+        g.MapPost("/clear", (LibraryScanService scans) =>
         {
-            await svc.ClearAllAsync(ct);
-            var r = await svc.SyncFromDiskAsync(ct);
-            return Results.Ok(new { added = r.Added, updated = r.Updated });
+            scans.StartScan(clearFirst: true);
+            return Results.Accepted();
         });
+
+        g.MapGet("/scan-status", (LibraryScanService scans) => Results.Ok(scans.Status));
 
         g.MapGet("/folders", (TrackService svc) => Results.Ok(svc.ListFolders()));
 
@@ -117,4 +126,6 @@ public static class TrackEndpoints
 
     private record FolderDto(string? Path);
     private record MoveDto(string? Folder);
+    private record TrackListDto(int Id, string FileName, string RelativePath, string? Title,
+        string? Artist, string? Album, double DurationSec, int Bitrate, long SizeBytes);
 }

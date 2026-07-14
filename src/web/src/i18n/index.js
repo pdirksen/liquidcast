@@ -40,7 +40,8 @@ const messages = {
       createFolderFailed: 'Could not create folder', deleteFolderHeader: 'Delete folder',
       deleteFolderMsg: 'Delete folder "{name}"?', folderDeleted: 'Folder deleted',
       folderNotEmpty: 'Folder is not empty', moved: 'Track moved', moveFailed: 'Could not move track',
-      dropToRoot: 'Drop here to move to the root folder' },
+      dropToRoot: 'Drop here to move to the root folder',
+      scanning: 'Scanning… {n} files', expandAll: 'Expand all folders', collapseAll: 'Collapse all folders' },
     playlists: {
       title: 'Playlists', newPlaylist: 'New playlist', name: 'Name', runtime: 'Runtime',
       deleteHeader: 'Delete playlist', deleteMsg: 'Delete playlist "{name}"?',
@@ -49,7 +50,8 @@ const messages = {
       save: 'Save', saved: 'Playlist saved', saveFailed: 'Save failed',
       library: 'Library', timeline: 'Timeline', dragReorder: 'drag tracks here · reorder',
       dragHint: 'Drag tracks from the library to build the timeline.',
-      crossfadeTip: 'Crossfade override (s)', tracksWord: 'tracks' },
+      crossfadeTip: 'Crossfade override (s)', tracksWord: 'tracks',
+      libraryCapped: 'Showing {shown} of {total} — refine your search' },
     schedule: {
       title: 'Schedule', today: 'Today', zoom: 'Zoom',
       zoomFit: '24h', zoomMedium: 'Medium', zoomDetail: 'Detail',
@@ -148,7 +150,8 @@ const messages = {
       createFolderFailed: 'Ordner konnte nicht erstellt werden', deleteFolderHeader: 'Ordner löschen',
       deleteFolderMsg: 'Ordner „{name}“ löschen?', folderDeleted: 'Ordner gelöscht',
       folderNotEmpty: 'Ordner ist nicht leer', moved: 'Titel verschoben', moveFailed: 'Titel konnte nicht verschoben werden',
-      dropToRoot: 'Hier ablegen, um in den Stammordner zu verschieben' },
+      dropToRoot: 'Hier ablegen, um in den Stammordner zu verschieben',
+      scanning: 'Scanne… {n} Dateien', expandAll: 'Alle Ordner ausklappen', collapseAll: 'Alle Ordner einklappen' },
     playlists: {
       title: 'Playlists', newPlaylist: 'Neue Playlist', name: 'Name', runtime: 'Laufzeit',
       deleteHeader: 'Playlist löschen', deleteMsg: 'Playlist „{name}“ löschen?',
@@ -157,7 +160,8 @@ const messages = {
       save: 'Speichern', saved: 'Playlist gespeichert', saveFailed: 'Speichern fehlgeschlagen',
       library: 'Bibliothek', timeline: 'Zeitleiste', dragReorder: 'Titel hierher ziehen · sortieren',
       dragHint: 'Ziehe Titel aus der Bibliothek, um die Zeitleiste zu füllen.',
-      crossfadeTip: 'Crossfade-Überschreibung (s)', tracksWord: 'Titel' },
+      crossfadeTip: 'Crossfade-Überschreibung (s)', tracksWord: 'Titel',
+      libraryCapped: 'Zeige {shown} von {total} — Suche verfeinern' },
     schedule: {
       title: 'Zeitplan', today: 'Heute', zoom: 'Zoom',
       zoomFit: '24h', zoomMedium: 'Mittel', zoomDetail: 'Detail',
@@ -256,7 +260,8 @@ const messages = {
       createFolderFailed: 'No se pudo crear la carpeta', deleteFolderHeader: 'Eliminar carpeta',
       deleteFolderMsg: '¿Eliminar la carpeta "{name}"?', folderDeleted: 'Carpeta eliminada',
       folderNotEmpty: 'La carpeta no está vacía', moved: 'Pista movida', moveFailed: 'No se pudo mover la pista',
-      dropToRoot: 'Suelta aquí para mover a la carpeta raíz' },
+      dropToRoot: 'Suelta aquí para mover a la carpeta raíz',
+      scanning: 'Escaneando… {n} archivos', expandAll: 'Expandir todas las carpetas', collapseAll: 'Contraer todas las carpetas' },
     playlists: {
       title: 'Playlists', newPlaylist: 'Nueva playlist', name: 'Nombre', runtime: 'Duración',
       deleteHeader: 'Eliminar playlist', deleteMsg: '¿Eliminar la playlist "{name}"?',
@@ -265,7 +270,8 @@ const messages = {
       save: 'Guardar', saved: 'Playlist guardada', saveFailed: 'Error al guardar',
       library: 'Biblioteca', timeline: 'Línea de tiempo', dragReorder: 'arrastra pistas aquí · reordena',
       dragHint: 'Arrastra pistas desde la biblioteca para construir la línea de tiempo.',
-      crossfadeTip: 'Anular crossfade (s)', tracksWord: 'pistas' },
+      crossfadeTip: 'Anular crossfade (s)', tracksWord: 'pistas',
+      libraryCapped: 'Mostrando {shown} de {total} — afina la búsqueda' },
     schedule: {
       title: 'Programación', today: 'Hoy', zoom: 'Zoom',
       zoomFit: '24h', zoomMedium: 'Media', zoomDetail: 'Detalle',
