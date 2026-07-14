@@ -76,7 +76,7 @@ function onDragStart(e, track) {
 </template>
 
 <style scoped>
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
 .panel-head { padding: .7rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; }
 .panel-tools { display: flex; flex-direction: column; gap: .5rem; padding: .6rem; border-bottom: 1px solid var(--border); }
 .list { flex: 1; min-height: 200px; overflow-y: auto; padding: .5rem; }

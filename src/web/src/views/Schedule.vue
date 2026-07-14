@@ -203,7 +203,7 @@ function onRemove(id) {
 <style scoped>
 .toolbar { display: flex; align-items: center; gap: .5rem; }
 .daypick { width: 11rem; }
-.layout { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; align-items: stretch; }
+.layout { display: grid; grid-template-columns: 1fr clamp(300px, 22vw, 560px); gap: 1rem; align-items: stretch; }
 .hint { margin-top: .5rem; font-size: .8rem; }
 @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
 </style>
