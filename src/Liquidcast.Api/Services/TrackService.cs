@@ -86,6 +86,16 @@ public class TrackService
     /// <summary>Recursively scans TracksDir and reconciles the DB: fixes RelativePath on known
     /// files and ingests MP3s found in subfolders (e.g. dropped in manually). Only unknown files
     /// are hashed/parsed, so re-scanning an existing library is cheap.</summary>
+    /// <summary>Wipes all track rows plus anything referencing them (playlist items, scheduled
+    /// tracks) so a subsequent <see cref="SyncFromDiskAsync"/> rebuilds the library from scratch.
+    /// Audio files on disk are left untouched.</summary>
+    public async Task ClearAllAsync(CancellationToken ct)
+    {
+        await _db.PlaylistItems.ExecuteDeleteAsync(ct);
+        await _db.ScheduledTracks.ExecuteDeleteAsync(ct);
+        await _db.Tracks.ExecuteDeleteAsync(ct);
+    }
+
     public async Task<SyncResult> SyncFromDiskAsync(CancellationToken ct)
     {
         _cfg.EnsureDirectories();

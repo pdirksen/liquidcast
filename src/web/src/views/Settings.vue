@@ -16,14 +16,17 @@ import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import BackupPanel from '../components/BackupPanel.vue'
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 const { t } = useI18n()
 const toast = useToast()
+const confirm = useConfirm()
 const prefs = usePrefs()
 const dateFormats = DATE_FORMATS
 const s = ref(null)
 const playlists = ref([])
 const saving = ref(false)
+const clearing = ref(false)
 const tab = ref('stream')
 
 // Standard Shoutcast/Icecast directory genres, sent verbatim in the ICY genre header.
@@ -61,6 +64,26 @@ async function save() {
   } finally {
     saving.value = false
   }
+}
+
+function clearLibrary() {
+  confirm.require({
+    message: t('settings.clearLibraryMsg'),
+    header: t('settings.clearLibraryHeader'),
+    icon: 'pi pi-exclamation-triangle',
+    acceptProps: { severity: 'danger', label: t('common.delete') },
+    accept: async () => {
+      clearing.value = true
+      try {
+        const { data } = await api.post('/tracks/clear')
+        toast.add({ severity: 'success', summary: t('settings.clearLibraryDone', { added: data.added }), life: 4000 })
+      } catch {
+        toast.add({ severity: 'error', summary: t('settings.clearLibraryFailed'), life: 3000 })
+      } finally {
+        clearing.value = false
+      }
+    },
+  })
 }
 </script>
 
@@ -169,6 +192,11 @@ async function save() {
                 <label>{{ t('settings.loginRateLimitWindowSec') }}</label>
                 <InputNumber v-model="s.loginRateLimitWindowSec" :min="1" :useGrouping="false" />
               </div>
+            </section>
+            <section class="card">
+              <h3>{{ t('settings.trackLibrary') }}</h3>
+              <Button :label="t('settings.clearLibrary')" icon="pi pi-trash" severity="danger" outlined
+                :loading="clearing" @click="clearLibrary" />
             </section>
           </div>
         </TabPanel>

@@ -67,6 +67,13 @@ public static class TrackEndpoints
             return Results.Ok(new { added = r.Added, updated = r.Updated });
         });
 
+        g.MapPost("/clear", async (TrackService svc, CancellationToken ct) =>
+        {
+            await svc.ClearAllAsync(ct);
+            var r = await svc.SyncFromDiskAsync(ct);
+            return Results.Ok(new { added = r.Added, updated = r.Updated });
+        });
+
         g.MapGet("/folders", (TrackService svc) => Results.Ok(svc.ListFolders()));
 
         g.MapPost("/folders", (FolderDto dto, TrackService svc) =>
