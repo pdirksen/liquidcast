@@ -33,6 +33,7 @@ public class TrackService
 
         string hash;
         long size;
+        Meta meta;
         await using (var fs = File.Create(tmp))
         {
             await content.CopyToAsync(fs, ct);
@@ -41,6 +42,8 @@ public class TrackService
         await using (var read = File.OpenRead(tmp))
         {
             hash = Convert.ToHexString(await SHA256.HashDataAsync(read, ct)).ToLowerInvariant();
+            // Reuse the same handle for tag/duration parsing — one read instead of two.
+            meta = ReadMetadata(read);
         }
 
         var existing = await _db.Tracks.FirstOrDefaultAsync(t => t.Sha256 == hash, ct);
@@ -50,17 +53,16 @@ public class TrackService
             return new UploadResult(existing, true);
         }
 
-        var safeName = MakeUniqueName(originalName, targetDir);
-        var finalPath = Path.Combine(targetDir, safeName);
-        File.Move(tmp, finalPath, overwrite: false);
-
-        var meta = ReadMetadata(finalPath);
         if (meta.DurationSec <= 0)
         {
             // ATL couldn't decode any audio frames — not a real MP3 despite the extension.
-            File.Delete(finalPath);
+            File.Delete(tmp);
             throw new InvalidOperationException("File is not a valid MP3.");
         }
+
+        var safeName = MakeUniqueName(originalName, targetDir);
+        var finalPath = Path.Combine(targetDir, safeName);
+        File.Move(tmp, finalPath, overwrite: false);
 
         var track = new Track
         {
@@ -134,8 +136,10 @@ public class TrackService
             }
 
             string hash;
-            await using (var read = File.OpenRead(file))
-                hash = Convert.ToHexString(await SHA256.HashDataAsync(read, ct)).ToLowerInvariant();
+            long size;
+            await using var fs = File.OpenRead(file);
+            hash = Convert.ToHexString(await SHA256.HashDataAsync(fs, ct)).ToLowerInvariant();
+            size = fs.Length;
 
             if (byHash.TryGetValue(hash, out var sameContent))
             {
@@ -153,7 +157,8 @@ public class TrackService
                 continue;
             }
 
-            var meta = ReadMetadata(file);
+            // Reuse the already-open handle for tag/duration parsing — one file read instead of two.
+            var meta = ReadMetadata(fs);
             var track = new Track
             {
                 FileName = name,
@@ -164,7 +169,7 @@ public class TrackService
                 Album = meta.Album,
                 DurationSec = meta.DurationSec,
                 Bitrate = meta.Bitrate,
-                SizeBytes = new FileInfo(file).Length,
+                SizeBytes = size,
                 Sha256 = hash,
                 UploadedAt = DateTime.UtcNow,
             };
@@ -281,11 +286,15 @@ public class TrackService
 
     private record Meta(string? Title, string? Artist, string? Album, double DurationSec, int Bitrate);
 
-    private static Meta ReadMetadata(string path)
+    /// <summary>Reads tag/duration metadata from an already-open, seekable stream (positioned
+    /// wherever the caller left it — this seeks to 0 itself) so hashing and metadata parsing
+    /// share a single file read instead of two.</summary>
+    private static Meta ReadMetadata(Stream stream)
     {
         try
         {
-            var t = new ATL.Track(path);
+            stream.Position = 0;
+            var t = new ATL.Track(stream, ".mp3");
             var title = Sanitize(t.Title);
             var artist = Sanitize(t.Artist);
             var album = Sanitize(t.Album);
