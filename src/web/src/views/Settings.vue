@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { usePrefs, DATE_FORMATS } from '../stores/prefs'
@@ -27,6 +27,7 @@ const s = ref(null)
 const playlists = ref([])
 const saving = ref(false)
 const clearing = ref(false)
+const scanStatus = ref(null)
 const tab = ref('stream')
 
 // Standard Shoutcast/Icecast directory genres, sent verbatim in the ICY genre header.
@@ -52,7 +53,18 @@ async function load() {
   s.value = cfg.data
   playlists.value = [{ label: t('common.none'), value: null }, ...pl.data.map((x) => ({ label: x.name, value: x.id }))]
 }
-onMounted(load)
+
+// A scan can already be running (rescan triggered from the Track Library page, or the
+// startup scan) when this page mounts — poll so the button disables and progress shows
+// instead of letting a second scan (e.g. a destructive clear) queue in unnoticed.
+let scanTimer = null
+async function pollScan() {
+  const { data } = await api.get('/tracks/scan-status')
+  scanStatus.value = data
+  if (data.scanning) scanTimer = setTimeout(pollScan, 2000)
+}
+onMounted(() => { load(); pollScan() })
+onUnmounted(() => clearTimeout(scanTimer))
 
 async function save() {
   saving.value = true
@@ -74,19 +86,23 @@ function clearLibrary() {
     acceptProps: { severity: 'danger', label: t('common.delete') },
     accept: async () => {
       clearing.value = true
+      clearTimeout(scanTimer) // stop the passive poll — the loop below drives scanStatus now
       try {
         // Returns 202 — the scan runs server-side; poll until it finishes.
         await api.post('/tracks/clear')
-        let status
+        let status = { scanning: true, scanned: 0, added: 0, updated: 0 }
+        scanStatus.value = status
         do {
           await new Promise((r) => setTimeout(r, 2000))
           status = (await api.get('/tracks/scan-status')).data
+          scanStatus.value = status
         } while (status.scanning)
         toast.add({ severity: 'success', summary: t('settings.clearLibraryDone', { added: status.added }), life: 4000 })
       } catch {
         toast.add({ severity: 'error', summary: t('settings.clearLibraryFailed'), life: 3000 })
       } finally {
         clearing.value = false
+        scanStatus.value = null
       }
     },
   })
@@ -201,8 +217,13 @@ function clearLibrary() {
             </section>
             <section class="card">
               <h3>{{ t('settings.trackLibrary') }}</h3>
-              <Button :label="t('settings.clearLibrary')" icon="pi pi-trash" severity="danger" outlined
-                :loading="clearing" @click="clearLibrary" />
+              <div class="row">
+                <Button :label="t('settings.clearLibrary')" icon="pi pi-trash" severity="danger" outlined
+                  :loading="clearing" :disabled="scanStatus?.scanning && !clearing" @click="clearLibrary" />
+                <span v-if="scanStatus?.scanning" class="scanning">
+                  <i class="pi pi-spin pi-spinner" /> {{ t('tracks.scanning', { n: scanStatus.scanned }) }}
+                </span>
+              </div>
             </section>
           </div>
         </TabPanel>
@@ -223,4 +244,5 @@ function clearLibrary() {
 .grid2 label { font-size: .85rem; color: var(--text-muted); }
 :deep(.p-inputtext), :deep(.p-password), :deep(.p-select), :deep(.p-inputnumber) { width: 100%; }
 @media (max-width: 850px) { .cards { grid-template-columns: 1fr; } }
+.scanning { color: var(--text-muted); font-size: .85rem; display: inline-flex; align-items: center; gap: .4rem; }
 </style>
