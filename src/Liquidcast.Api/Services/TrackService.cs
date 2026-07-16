@@ -135,47 +135,56 @@ public class TrackService
                 continue;
             }
 
-            string hash;
-            long size;
-            await using var fs = File.OpenRead(file);
-            hash = Convert.ToHexString(await SHA256.HashDataAsync(fs, ct)).ToLowerInvariant();
-            size = fs.Length;
-
-            if (byHash.TryGetValue(hash, out var sameContent))
+            // Guard the whole per-file read: a single unreadable/corrupt file (locked handle,
+            // truncated MP3, ATL blowing up on a malformed tag) must be logged-and-skipped, not
+            // abort the entire scan and lose every file after it. Cancellation is not swallowed.
+            try
             {
-                // Same content already known. If its recorded file is gone, this is a move —
-                // realign the row to the new location. If the original still exists, this is a
-                // genuine on-disk duplicate → ignore it (hash is identity, as upload dedup does).
-                if (!File.Exists(sameContent.StoredPath))
+                await using var fs = File.OpenRead(file);
+                var hash = Convert.ToHexString(await SHA256.HashDataAsync(fs, ct)).ToLowerInvariant();
+                var size = fs.Length;
+
+                if (byHash.TryGetValue(hash, out var sameContent))
                 {
-                    sameContent.StoredPath = file;
-                    sameContent.RelativePath = rel;
-                    sameContent.FileName = name;
-                    updated++;
-                    unsaved++;
+                    // Same content already known. If its recorded file is gone, this is a move —
+                    // realign the row to the new location. If the original still exists, this is a
+                    // genuine on-disk duplicate → ignore it (hash is identity, as upload dedup does).
+                    if (!File.Exists(sameContent.StoredPath))
+                    {
+                        sameContent.StoredPath = file;
+                        sameContent.RelativePath = rel;
+                        sameContent.FileName = name;
+                        updated++;
+                        unsaved++;
+                    }
+                    continue;
                 }
+
+                // Reuse the already-open handle for tag/duration parsing — one file read instead of two.
+                var meta = ReadMetadata(fs);
+                var track = new Track
+                {
+                    FileName = name,
+                    StoredPath = file,
+                    RelativePath = rel,
+                    Title = meta.Title,
+                    Artist = meta.Artist,
+                    Album = meta.Album,
+                    DurationSec = meta.DurationSec,
+                    Bitrate = meta.Bitrate,
+                    SizeBytes = size,
+                    Sha256 = hash,
+                    UploadedAt = DateTime.UtcNow,
+                };
+                _db.Tracks.Add(track);
+                byHash.TryAdd(hash, track);
+                added++;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _log.LogWarning(ex, "Skipping unreadable track {File}", file);
                 continue;
             }
-
-            // Reuse the already-open handle for tag/duration parsing — one file read instead of two.
-            var meta = ReadMetadata(fs);
-            var track = new Track
-            {
-                FileName = name,
-                StoredPath = file,
-                RelativePath = rel,
-                Title = meta.Title,
-                Artist = meta.Artist,
-                Album = meta.Album,
-                DurationSec = meta.DurationSec,
-                Bitrate = meta.Bitrate,
-                SizeBytes = size,
-                Sha256 = hash,
-                UploadedAt = DateTime.UtcNow,
-            };
-            _db.Tracks.Add(track);
-            byHash.TryAdd(hash, track);
-            added++;
 
             if (++unsaved >= saveBatchSize)
             {
