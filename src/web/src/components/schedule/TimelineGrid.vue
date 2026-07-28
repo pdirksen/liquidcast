@@ -197,6 +197,30 @@ watch([() => props.day, scroller], () => {
   scroller.value.scrollLeft = nowX.value != null ? Math.max(0, nowX.value - 200) : 0
 }, { immediate: true })
 
+// --- drag anywhere on empty timeline to pan horizontally ---------------------
+// Skips entries (they have their own HTML5 drag + click-to-edit) and the left
+// mouse button only; a plain click that doesn't move still falls through to edit.
+const panning = ref(false)
+function onPanStart(e) {
+  if (e.button !== 0 || e.target.closest('.entry')) return
+  const el = scroller.value
+  if (!el) return
+  const startX = e.clientX
+  const startLeft = el.scrollLeft
+  const move = (ev) => {
+    el.scrollLeft = startLeft - (ev.clientX - startX)
+    panning.value = true
+    ev.preventDefault()
+  }
+  const up = () => {
+    window.removeEventListener('mousemove', move)
+    window.removeEventListener('mouseup', up)
+    panning.value = false
+  }
+  window.addEventListener('mousemove', move)
+  window.addEventListener('mouseup', up)
+}
+
 function entryTooltip(e) {
   const ovr = e.override ? ` · ${t('schedule.override')}` : ''
   return `${e.artist ? e.artist + ' - ' : ''}${e.title}\n${hhmm(e.startUtc)} – ${hhmm(e.endUtc)} · ${lineLabel(e.line)}${ovr}`
@@ -216,7 +240,7 @@ function entryTooltip(e) {
         <span v-else class="lane-name" :title="t('schedule.renameLine')">{{ l.label }}</span>
       </div>
     </div>
-    <div ref="scroller" class="scroller">
+    <div ref="scroller" class="scroller" :class="{ grabbing: panning }" @mousedown="onPanStart">
       <div class="canvas" :style="{ width: canvasW + 'px' }">
         <div class="ruler" :style="{ height: RULER_H + 'px' }">
           <div v-for="h in 24" :key="h" class="hour" :style="{ width: hourW + 'px' }">{{ hh(h - 1) }}</div>
@@ -257,7 +281,8 @@ function entryTooltip(e) {
 .lane-edit { min-width: 0; flex: 1; font: inherit; color: inherit; background: var(--surface);
   border: 1px solid var(--accent); border-radius: 4px; padding: .1rem .3rem; outline: none; }
 
-.scroller { flex: 1; overflow-x: auto; }
+.scroller { flex: 1; overflow-x: auto; cursor: grab; }
+.scroller.grabbing { cursor: grabbing; user-select: none; }
 .canvas { position: relative; }
 .ruler { display: flex; border-bottom: 1px solid var(--border); font-size: .72rem; color: var(--text-muted); }
 .hour { flex: 0 0 auto; border-right: 1px solid var(--border); padding: .3rem 0 0 .3rem; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
