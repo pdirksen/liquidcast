@@ -22,7 +22,7 @@ public static class SettingsEndpoints
             s.IcecastHost = dto.IcecastHost;
             s.IcecastPort = dto.IcecastPort;
             s.IcecastPassword = dto.IcecastPassword;
-            s.IcecastMount = dto.IcecastMount;
+            s.IcecastMount = AppSetting.NormalizeMount(dto.IcecastMount);
             s.StreamName = dto.StreamName;
             s.StreamDescription = dto.StreamDescription;
             s.Genre = string.IsNullOrWhiteSpace(dto.Genre) ? "Various" : dto.Genre.Trim();

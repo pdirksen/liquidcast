@@ -144,7 +144,7 @@ using (var scope = app.Services.CreateScope())
     }
     Env("ICECAST_HOST", v => settings.IcecastHost = v);
     Env("ICECAST_PORT", v => { if (int.TryParse(v, out var p)) settings.IcecastPort = p; });
-    Env("ICECAST_MOUNT", v => settings.IcecastMount = v);
+    Env("ICECAST_MOUNT", v => settings.IcecastMount = AppSetting.NormalizeMount(v));
     Env("ICECAST_SOURCE_PASSWORD", v => settings.IcecastPassword = v);
     Env("ICECAST_ADMIN_USER", v => settings.IcecastAdminUser = v);
     Env("ICECAST_ADMIN_PASSWORD", v => settings.IcecastAdminPassword = v);

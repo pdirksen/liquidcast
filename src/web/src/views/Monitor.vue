@@ -99,7 +99,9 @@ const schedulerEnabled = computed({
 const streamUrl = computed(() => {
   if (!snap.value) return ''
   const override = settings.value?.publicStreamUrl?.trim()
-  return override || `http://${location.hostname}:8000/stream`
+  const port = settings.value?.icecastPort || 8000
+  const mount = settings.value?.icecastMount || '/stream'
+  return override || `http://${location.hostname}:${port}${mount}`
 })
 
 // Listen: minimal custom player (play/pause + volume). No seek bar — a livestream has no position.

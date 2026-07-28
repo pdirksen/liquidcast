@@ -33,6 +33,15 @@ public class AppSetting
     /// set this when a reverse proxy fronts the stream on a different host/port/path.</summary>
     public string? PublicStreamUrl { get; set; }
 
+    /// <summary>Icecast requires a mount that begins with '/'. Coerce user/env input so a value
+    /// like "radio" or "radio/" can't produce an unconnectable source (fallible=false output).</summary>
+    public static string NormalizeMount(string? mount)
+    {
+        var m = (mount ?? "").Trim().TrimEnd('/');
+        if (m.Length == 0) return "/stream";
+        return m.StartsWith('/') ? m : "/" + m;
+    }
+
     // Icecast admin (for listener stats)
     public string IcecastAdminUser { get; set; } = "admin";
     public string IcecastAdminPassword { get; set; } = "hackme";
