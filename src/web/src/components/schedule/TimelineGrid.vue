@@ -274,17 +274,25 @@ function entryTooltip(e) {
 .entry .pi-bolt { position: absolute; top: 3px; right: 4px; font-size: .65rem; }
 .entry.ovr { border-style: dashed; }
 
-/* per-line colors: fallback gray, P1 strongest → P4 muted */
+/* per-line colors: fallback gray, P1 strongest → P8 muted */
 .c0 { background: rgba(148, 163, 184, .22); border-color: rgba(148, 163, 184, .55); }
 .c1 { background: rgba(96, 165, 250, .28); border-color: rgba(96, 165, 250, .65); }
 .c2 { background: rgba(52, 211, 153, .25); border-color: rgba(52, 211, 153, .6); }
 .c3 { background: rgba(251, 191, 36, .22); border-color: rgba(251, 191, 36, .55); }
 .c4 { background: rgba(192, 132, 252, .22); border-color: rgba(192, 132, 252, .55); }
+.c5 { background: rgba(244, 114, 182, .22); border-color: rgba(244, 114, 182, .55); }
+.c6 { background: rgba(34, 211, 238, .22); border-color: rgba(34, 211, 238, .55); }
+.c7 { background: rgba(251, 146, 60, .22); border-color: rgba(251, 146, 60, .55); }
+.c8 { background: rgba(129, 140, 248, .22); border-color: rgba(129, 140, 248, .55); }
 .lc0 .dot { background: rgb(148, 163, 184); }
 .lc1 .dot { background: rgb(96, 165, 250); }
 .lc2 .dot { background: rgb(52, 211, 153); }
 .lc3 .dot { background: rgb(251, 191, 36); }
 .lc4 .dot { background: rgb(192, 132, 252); }
+.lc5 .dot { background: rgb(244, 114, 182); }
+.lc6 .dot { background: rgb(34, 211, 238); }
+.lc7 .dot { background: rgb(251, 146, 60); }
+.lc8 .dot { background: rgb(129, 140, 248); }
 
 .ghost { position: absolute; top: 7px; bottom: 7px; border-radius: 6px; pointer-events: none;
   background: rgba(96, 165, 250, .35); border: 1px dashed rgba(96, 165, 250, .9); }
