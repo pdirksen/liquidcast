@@ -31,6 +31,25 @@ async function create() {
   router.push(`/playlists/${data.id}`)
 }
 
+function deleteEmpty() {
+  const empties = playlists.value.filter((p) => !p.itemCount)
+  if (!empties.length) {
+    toast.add({ severity: 'info', summary: t('playlists.deleteEmptyNone'), life: 2000 })
+    return
+  }
+  confirm.require({
+    message: t('playlists.deleteEmptyMsg', { count: empties.length }),
+    header: t('playlists.deleteEmptyHeader'),
+    icon: 'pi pi-trash',
+    acceptProps: { severity: 'danger', label: t('common.delete') },
+    accept: async () => {
+      await Promise.all(empties.map((p) => api.delete(`/playlists/${p.id}`)))
+      toast.add({ severity: 'success', summary: t('playlists.deleteEmptyDone', { count: empties.length }), life: 2500 })
+      await load()
+    },
+  })
+}
+
 function remove(p) {
   confirm.require({
     message: t('playlists.deleteMsg', { name: p.name }),
@@ -52,6 +71,8 @@ function remove(p) {
     <div class="card">
     <div class="row">
       <span class="spacer" />
+      <Button :label="t('playlists.deleteEmpty')" icon="pi pi-trash" severity="danger" outlined
+        @click="deleteEmpty" />
       <Button :label="t('playlists.newPlaylist')" icon="pi pi-plus" @click="showCreate = true" />
     </div>
 

@@ -45,7 +45,10 @@ const messages = {
     playlists: {
       title: 'Playlists', newPlaylist: 'New playlist', name: 'Name', runtime: 'Runtime',
       deleteHeader: 'Delete playlist', deleteMsg: 'Delete playlist "{name}"?',
-      playlistName: 'Playlist name', deleted: 'Deleted' },
+      playlistName: 'Playlist name', deleted: 'Deleted',
+      deleteEmpty: 'Delete empty', deleteEmptyHeader: 'Delete empty playlists',
+      deleteEmptyMsg: 'Delete {count} playlist(s) with no tracks?',
+      deleteEmptyNone: 'No empty playlists', deleteEmptyDone: 'Deleted {count} empty playlist(s)' },
     editor: {
       save: 'Save', saved: 'Playlist saved', saveFailed: 'Save failed',
       library: 'Library', timeline: 'Timeline', dragReorder: 'drag tracks here · reorder',
@@ -155,7 +158,10 @@ const messages = {
     playlists: {
       title: 'Playlists', newPlaylist: 'Neue Playlist', name: 'Name', runtime: 'Laufzeit',
       deleteHeader: 'Playlist löschen', deleteMsg: 'Playlist „{name}“ löschen?',
-      playlistName: 'Playlist-Name', deleted: 'Gelöscht' },
+      playlistName: 'Playlist-Name', deleted: 'Gelöscht',
+      deleteEmpty: 'Leere löschen', deleteEmptyHeader: 'Leere Playlists löschen',
+      deleteEmptyMsg: '{count} Playlist(s) ohne Tracks löschen?',
+      deleteEmptyNone: 'Keine leeren Playlists', deleteEmptyDone: '{count} leere Playlist(s) gelöscht' },
     editor: {
       save: 'Speichern', saved: 'Playlist gespeichert', saveFailed: 'Speichern fehlgeschlagen',
       library: 'Bibliothek', timeline: 'Zeitleiste', dragReorder: 'Titel hierher ziehen · sortieren',
@@ -265,7 +271,10 @@ const messages = {
     playlists: {
       title: 'Playlists', newPlaylist: 'Nueva playlist', name: 'Nombre', runtime: 'Duración',
       deleteHeader: 'Eliminar playlist', deleteMsg: '¿Eliminar la playlist "{name}"?',
-      playlistName: 'Nombre de la playlist', deleted: 'Eliminado' },
+      playlistName: 'Nombre de la playlist', deleted: 'Eliminado',
+      deleteEmpty: 'Eliminar vacías', deleteEmptyHeader: 'Eliminar playlists vacías',
+      deleteEmptyMsg: '¿Eliminar {count} playlist(s) sin pistas?',
+      deleteEmptyNone: 'No hay playlists vacías', deleteEmptyDone: '{count} playlist(s) vacía(s) eliminada(s)' },
     editor: {
       save: 'Guardar', saved: 'Playlist guardada', saveFailed: 'Error al guardar',
       library: 'Biblioteca', timeline: 'Línea de tiempo', dragReorder: 'arrastra pistas aquí · reordena',
