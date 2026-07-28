@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
@@ -17,8 +17,14 @@ const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 const playlists = ref([])
+const search = ref('')
 const showCreate = ref(false)
 const newName = ref('')
+
+const filtered = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return q ? playlists.value.filter((p) => (p.name || '').toLowerCase().includes(q)) : playlists.value
+})
 
 async function load() { playlists.value = (await api.get('/playlists')).data }
 onMounted(load)
@@ -70,13 +76,14 @@ function remove(p) {
     <h1>Playlists</h1>
     <div class="card">
     <div class="row">
+      <InputText v-model="search" :placeholder="t('common.search')" size="small" />
       <span class="spacer" />
       <Button :label="t('playlists.deleteEmpty')" icon="pi pi-trash" severity="danger" outlined
         @click="deleteEmpty" />
       <Button :label="t('playlists.newPlaylist')" icon="pi pi-plus" @click="showCreate = true" />
     </div>
 
-    <DataTable :value="playlists" class="mt" stripedRows rowHover size="small"
+    <DataTable :value="filtered" class="mt" stripedRows rowHover size="small"
       paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
       <Column field="name" :header="t('playlists.name')" />
       <Column field="itemCount" header="Tracks" />
