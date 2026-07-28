@@ -205,13 +205,19 @@ public class SchedulerService : BackgroundService
     private async Task<string?> PushAsync(ScheduledTrack entry, double cueShiftSec, CancellationToken ct)
     {
         var track = entry.Track!;
+        // Untagged MP3s have no title → meta.now comes back empty, which the Monitor reads as
+        // silence and which stalls the on-air bookkeeping below. Fall back to the file name so
+        // every push carries a stable, non-empty label (also surfaced as the Icecast title).
+        var title = string.IsNullOrWhiteSpace(track.Title)
+            ? Path.GetFileNameWithoutExtension(track.FileName)
+            : track.Title;
         var cueIn = (entry.CueInSec is > 0 ? entry.CueInSec.Value : 0) + cueShiftSec;
-        var uri = ScriptGenerator.BuildRequestUri(track.StoredPath, track.Title, track.Artist,
+        var uri = ScriptGenerator.BuildRequestUri(track.StoredPath, title, track.Artist,
             cueIn > 0 ? cueIn : null, entry.CueOutSec,
             entry.CrossfadeSec ?? _cfg.Settings.DefaultCrossfadeSec);
 
         var resp = await _ls.CommandAsync($"main.push {uri}", ct);
-        _pushed.Enqueue(new PushItem(uri, track.Title, track.Artist,
+        _pushed.Enqueue(new PushItem(uri, title, track.Artist,
             Math.Max(0, ScheduleMath.EffectiveDurationSec(entry) - cueShiftSec),
             entry.TrackId, entry.Line));
 
