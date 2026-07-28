@@ -268,7 +268,7 @@ async function onDrop(event, folder) {
          so dropping anywhere on a folder row works (not just the name cell). -->
     <div @dragover.prevent="onTreeDragOver" @drop.prevent="onTreeDrop">
     <TreeTable :value="treeNodes" v-model:expandedKeys="expandedKeys" :loading="loading" class="mt" size="small"
-      paginator :rows="100" :rowsPerPageOptions="[50, 100, 250]">
+      rowHover paginator :rows="100" :rowsPerPageOptions="[50, 100, 250]">
       <Column field="name" :header="t('tracks.title_col')" expander>
         <template #body="{ node }">
           <span v-if="node.data.isFolder" class="fnode" :class="{ over: dragOverKey === node.key }"

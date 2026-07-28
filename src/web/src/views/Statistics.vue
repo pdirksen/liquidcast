@@ -127,7 +127,7 @@ const trackName = (row) => (row.artist ? `${row.artist} - ${row.title || '?'}` :
       <div class="tables2">
         <div>
           <h3 class="card-title">{{ t('stats.topTracks') }}</h3>
-          <DataTable :value="plays?.topTracks || []" size="small" stripedRows>
+          <DataTable :value="plays?.topTracks || []" size="small" stripedRows rowHover>
             <Column :header="t('stats.track')">
               <template #body="{ data }">{{ trackName(data) }}</template>
             </Column>
@@ -139,7 +139,7 @@ const trackName = (row) => (row.artist ? `${row.artist} - ${row.title || '?'}` :
         </div>
         <div>
           <h3 class="card-title">{{ t('stats.topArtists') }}</h3>
-          <DataTable :value="plays?.topArtists || []" size="small" stripedRows>
+          <DataTable :value="plays?.topArtists || []" size="small" stripedRows rowHover>
             <Column field="artist" :header="t('stats.artist')" />
             <Column field="plays" :header="t('stats.playsWord')" style="width:5.5rem" class="num" />
             <Column :header="t('stats.airtime')" style="width:7rem" class="num">

@@ -55,7 +55,8 @@ function remove(p) {
       <Button :label="t('playlists.newPlaylist')" icon="pi pi-plus" @click="showCreate = true" />
     </div>
 
-    <DataTable :value="playlists" class="mt" stripedRows size="small">
+    <DataTable :value="playlists" class="mt" stripedRows rowHover size="small"
+      paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
       <Column field="name" :header="t('playlists.name')" />
       <Column field="itemCount" header="Tracks" />
       <Column :header="t('playlists.runtime')">
