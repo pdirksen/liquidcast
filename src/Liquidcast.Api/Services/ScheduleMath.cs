@@ -23,6 +23,6 @@ public static class ScheduleMath
     public static bool Overlaps(DateTime aStart, DateTime aEnd, DateTime bStart, DateTime bEnd) =>
         aStart < bEnd && bStart < aEnd;
 
-    /// <summary>Playback priority: lower is better. Priority 1..4 → 1..4, Fallback line (0) → 5.</summary>
-    public static int PriorityKey(ScheduledTrack e) => e.Line == 0 ? 5 : e.Line;
+    /// <summary>Playback priority: lower is better. Priority 1..8 → 1..8, Fallback line (0) → 9.</summary>
+    public static int PriorityKey(ScheduledTrack e) => e.Line == 0 ? 9 : e.Line;
 }

@@ -33,5 +33,5 @@ export function classifyOverlap(entries, { id, line, startMs, endMs }) {
   return { sameLine, crossLine, needsOverride }
 }
 
-// Display order: fallback line on top, then Priority 1 (highest) … Priority 4.
-export const LINE_ORDER = [0, 1, 2, 3, 4]
+// Display order: fallback line on top, then Priority 1 (highest) … Priority 8.
+export const LINE_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8]

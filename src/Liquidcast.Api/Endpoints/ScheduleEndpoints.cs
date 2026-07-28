@@ -71,8 +71,8 @@ public static class ScheduleEndpoints
 
         g.MapPut("/lines/{line:int}", async (int line, LineNameDto dto, AppDbContext db) =>
         {
-            if (line is < 0 or > 4)
-                return Results.BadRequest(new { error = "Line must be between 0 and 4." });
+            if (line is < 0 or > 8)
+                return Results.BadRequest(new { error = "Line must be between 0 and 8." });
             var name = (dto.Name ?? "").Trim();
             if (name.Length > 40)
                 return Results.BadRequest(new { error = "Name too long (max 40 characters)." });
@@ -128,8 +128,8 @@ public static class ScheduleEndpoints
     private static async Task<(ScheduledTrack?, IResult?)> BuildCandidateAsync(
         AppDbContext db, EntryDto dto, int? excludeId)
     {
-        if (dto.Line is < 0 or > 4)
-            return (null, Results.BadRequest(new { error = "Line must be between 0 and 4." }));
+        if (dto.Line is < 0 or > 8)
+            return (null, Results.BadRequest(new { error = "Line must be between 0 and 8." }));
 
         var track = await db.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == dto.TrackId);
         if (track is null)

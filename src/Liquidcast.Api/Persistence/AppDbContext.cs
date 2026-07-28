@@ -43,7 +43,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
         b.Entity<ScheduledTrack>().HasIndex(s => s.StartUtc);
 
-        // Id IS the line number (0..4), assigned by the client — never an identity column.
+        // Id IS the line number (0..8), assigned by the client — never an identity column.
         b.Entity<ScheduleLine>().Property(l => l.Id).ValueGeneratedNever();
 
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
