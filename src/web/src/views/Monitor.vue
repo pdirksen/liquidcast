@@ -5,7 +5,6 @@ import * as signalR from '@microsoft/signalr'
 import { api } from '../api/client'
 import { fmtDuration } from '../util'
 import Button from 'primevue/button'
-import ToggleSwitch from 'primevue/toggleswitch'
 import Tag from 'primevue/tag'
 import Timeline from 'primevue/timeline'
 import ListenerChart from '../components/ListenerChart.vue'
@@ -88,13 +87,7 @@ onMounted(async () => {
 })
 onUnmounted(() => { if (timer) clearInterval(timer); conn?.stop() })
 
-async function skip() { await api.post('/stream/skip') }
 async function restart() { await api.post('/stream/restart') }
-async function toggleScheduler(v) { await api.post('/stream/scheduler', { enabled: v }) }
-const schedulerEnabled = computed({
-  get: () => snap.value?.schedulerEnabled ?? true,
-  set: (v) => { if (snap.value) snap.value.schedulerEnabled = v; toggleScheduler(v) },
-})
 
 const streamUrl = computed(() => {
   if (!snap.value) return ''
@@ -163,15 +156,6 @@ async function copyUrl() {
           </div>
         </div>
 
-        <div class="controls">
-          <Button :label="t('monitor.skip')" icon="pi pi-step-forward" size="small" @click="skip" />
-          <Button :label="t('monitor.restartLs')" icon="pi pi-refresh" size="small" severity="secondary" @click="restart" />
-          <div class="row" style="margin-left:auto">
-            <span class="muted">{{ t('monitor.scheduler') }}</span>
-            <ToggleSwitch v-model="schedulerEnabled" />
-          </div>
-        </div>
-
         <ListenerChart />
 
         <div class="listen">
@@ -203,6 +187,8 @@ async function copyUrl() {
           <Tag :severity="snap?.icecastConnected ? 'success' : 'danger'" :value="snap?.icecastConnected ? t('monitor.connected') : t('monitor.offline')" /></div>
         <div class="stat"><span>{{ t('monitor.listeners') }}</span><b>{{ snap?.listeners ?? 0 }}</b></div>
         <div class="stat"><span>{{ t('monitor.line') }}</span><b>{{ lineLabel(snap?.currentLine) || '—' }}</b></div>
+        <Button :label="t('monitor.restartLs')" icon="pi pi-refresh" size="small" severity="secondary"
+          class="mt" fluid @click="restart" />
       </div>
 
       <div class="card">
@@ -290,7 +276,6 @@ async function copyUrl() {
 .url { font-size: .78rem; color: var(--text-muted); background: var(--surface-2);
   border: 1px solid var(--border); border-radius: 6px; padding: .3rem .55rem;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.controls { display: flex; gap: .5rem; align-items: center; margin-top: 1.25rem; }
 .stat { display: flex; justify-content: space-between; align-items: center; padding: .45rem 0; border-bottom: 1px solid var(--border); }
 .stat:last-child { border-bottom: none; }
 .tl { padding-top: .25rem; }
