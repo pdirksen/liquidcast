@@ -57,7 +57,7 @@ public static class TrackEndpoints
                 {
                     await using var stream = file.OpenReadStream();
                     var r = await svc.SaveUploadAsync(stream, file.FileName, folder, ct);
-                    results.Add(new { file.FileName, track = r.Track, duplicate = r.AlreadyExisted });
+                    results.Add(new { file.FileName, track = r.Track, duplicateOf = r.DuplicateOf?.RelativePath });
                 }
                 catch (InvalidOperationException ex)
                 {

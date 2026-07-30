@@ -18,7 +18,10 @@ public class TrackService
         _log = log;
     }
 
-    public record UploadResult(Track Track, bool AlreadyExisted);
+    /// <summary><paramref name="DuplicateOf"/> is a pre-existing track with byte-identical content
+    /// (null when the upload is new). The upload is stored either way — the field only lets callers
+    /// warn that a copy already exists.</summary>
+    public record UploadResult(Track Track, Track? DuplicateOf);
 
     /// <summary>Stores an uploaded MP3 in the data path (optionally under a subfolder) and records its metadata.</summary>
     public async Task<UploadResult> SaveUploadAsync(Stream content, string originalName, string? folder, CancellationToken ct)
@@ -46,12 +49,9 @@ public class TrackService
             meta = ReadMetadata(read);
         }
 
+        // Content-identical to a known track? Keep the upload anyway (a distinct library entry with
+        // its own name/path) but surface the existing copy so the caller can warn.
         var existing = await _db.Tracks.FirstOrDefaultAsync(t => t.Sha256 == hash, ct);
-        if (existing is not null)
-        {
-            File.Delete(tmp);
-            return new UploadResult(existing, true);
-        }
 
         if (meta.DurationSec <= 0)
         {
@@ -80,7 +80,7 @@ public class TrackService
         };
         _db.Tracks.Add(track);
         await _db.SaveChangesAsync(ct);
-        return new UploadResult(track, false);
+        return new UploadResult(track, existing);
     }
 
     public record SyncResult(int Added, int Updated);
@@ -108,8 +108,9 @@ public class TrackService
         int scanned = 0, added = 0, updated = 0, unsaved = 0;
         var known = await _db.Tracks.ToDictionaryAsync(t => t.StoredPath, StringComparer.OrdinalIgnoreCase, ct);
 
-        // Hash → track map so dedup/move detection is a memory lookup instead of a DB query per
-        // file; also makes tracks added earlier in this same scan visible to later duplicates.
+        // Hash → first-seen track map so move detection (a file's recorded path vanished but its
+        // content reappears elsewhere) is a memory lookup instead of a DB query per file. Identical
+        // content at a still-present path is a distinct entry, not a dedup target — see below.
         var byHash = new Dictionary<string, Track>(StringComparer.OrdinalIgnoreCase);
         foreach (var t in known.Values)
             if (t.Sha256 is not null) byHash.TryAdd(t.Sha256, t);
@@ -144,21 +145,21 @@ public class TrackService
                 var hash = Convert.ToHexString(await SHA256.HashDataAsync(fs, ct)).ToLowerInvariant();
                 var size = fs.Length;
 
-                if (byHash.TryGetValue(hash, out var sameContent))
+                if (byHash.TryGetValue(hash, out var sameContent) && !File.Exists(sameContent.StoredPath))
                 {
-                    // Same content already known. If its recorded file is gone, this is a move —
-                    // realign the row to the new location. If the original still exists, this is a
-                    // genuine on-disk duplicate → ignore it (hash is identity, as upload dedup does).
-                    if (!File.Exists(sameContent.StoredPath))
-                    {
-                        sameContent.StoredPath = file;
-                        sameContent.RelativePath = rel;
-                        sameContent.FileName = name;
-                        updated++;
-                        unsaved++;
-                    }
+                    // Same content known and its recorded file is gone → this is a move. Realign
+                    // the existing row to the new location instead of adding a second row.
+                    sameContent.StoredPath = file;
+                    sameContent.RelativePath = rel;
+                    sameContent.FileName = name;
+                    updated++;
+                    unsaved++;
                     continue;
                 }
+                // If another file with identical content still exists on disk, this is NOT a move:
+                // it's a distinct library entry with its own path/name (e.g. the same episode re-used
+                // under a different filename). It must get its own Track row — the old hash-based skip
+                // silently dropped these, so they never appeared on the Tracks page.
 
                 // Reuse the already-open handle for tag/duration parsing — one file read instead of two.
                 var meta = ReadMetadata(fs);

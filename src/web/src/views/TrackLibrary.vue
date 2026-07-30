@@ -136,9 +136,10 @@ async function onUpload(event) {
   try {
     const { data } = await api.post('/tracks/upload', form)
     const ok = data.filter((r) => r.track).length
-    const dup = data.filter((r) => r.duplicate).length
+    const dups = data.filter((r) => r.duplicateOf)
     const err = data.filter((r) => r.error)
-    toast.add({ severity: 'success', summary: t('tracks.uploaded', { n: ok }), detail: dup ? t('tracks.existed', { n: dup }) : '', life: 3000 })
+    toast.add({ severity: 'success', summary: t('tracks.uploaded', { n: ok }), life: 3000 })
+    dups.forEach((d) => toast.add({ severity: 'warn', summary: t('tracks.duplicateHeader'), detail: `${d.fileName} — ${t('tracks.duplicateWarn', { name: d.duplicateOf })}`, life: 6000 }))
     err.forEach((e) => toast.add({ severity: 'warn', summary: e.fileName, detail: e.error, life: 5000 }))
     await load()
   } catch {
