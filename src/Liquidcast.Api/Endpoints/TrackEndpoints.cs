@@ -33,6 +33,38 @@ public static class TrackEndpoints
                 .ToListAsync());
         });
 
+        // Where each track is already used — the playlist editor marks library rows that are
+        // in another playlist and/or on the schedule. Only tracks with at least one use are
+        // returned, so the payload stays small on a big library.
+        g.MapGet("/usage", async (AppDbContext db) =>
+        {
+            var inPlaylists = await db.PlaylistItems.AsNoTracking()
+                .Select(i => new { i.TrackId, i.PlaylistId })
+                .Distinct()
+                .ToListAsync();
+            var scheduled = await db.ScheduledTracks.AsNoTracking()
+                .GroupBy(s => s.TrackId)
+                .Select(x => new { TrackId = x.Key, Count = x.Count() })
+                .ToListAsync();
+
+            var byTrack = new Dictionary<int, (List<int> Playlists, int Scheduled)>();
+            foreach (var row in inPlaylists)
+            {
+                if (!byTrack.TryGetValue(row.TrackId, out var e))
+                    e = byTrack[row.TrackId] = (new List<int>(), 0);
+                e.Playlists.Add(row.PlaylistId);
+            }
+            foreach (var row in scheduled)
+            {
+                byTrack.TryGetValue(row.TrackId, out var e);
+                byTrack[row.TrackId] = (e.Playlists ?? new List<int>(), row.Count);
+            }
+
+            return Results.Ok(byTrack
+                .Select(kv => new TrackUsageDto(kv.Key, kv.Value.Playlists, kv.Value.Scheduled))
+                .ToList());
+        });
+
         g.MapPost("/upload", async (HttpRequest request, TrackService svc, RuntimeConfig cfg, CancellationToken ct) =>
         {
             if (!request.HasFormContentType)
@@ -128,4 +160,5 @@ public static class TrackEndpoints
     private record MoveDto(string? Folder);
     private record TrackListDto(int Id, string FileName, string RelativePath, string? Title,
         string? Artist, string? Album, double DurationSec, int Bitrate, long SizeBytes);
+    private record TrackUsageDto(int TrackId, List<int> PlaylistIds, int ScheduledCount);
 }

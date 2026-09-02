@@ -21,6 +21,20 @@ const items = ref([])
 const library = ref([])
 const search = ref('')
 const saving = ref(false)
+// trackId -> { playlistIds, scheduledCount }; playlistId -> name (for the marker tooltips)
+const usage = ref(new Map())
+const playlistNames = ref(new Map())
+
+function otherPlaylists(trackId) {
+  const u = usage.value.get(trackId)
+  if (!u) return []
+  return u.playlistIds
+    .filter((p) => p !== id)
+    .map((p) => playlistNames.value.get(p) || `#${p}`)
+}
+function scheduledCount(trackId) {
+  return usage.value.get(trackId)?.scheduledCount || 0
+}
 
 // Cap rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
 const LIBRARY_CAP = 200
@@ -49,12 +63,16 @@ function cloneTrack(track) {
 }
 
 async function load() {
-  const [pl, lib] = await Promise.all([
+  const [pl, lib, use, all] = await Promise.all([
     api.get(`/playlists/${id}`),
     api.get('/tracks'),
+    api.get('/tracks/usage'),
+    api.get('/playlists'),
   ])
   playlist.value = pl.data
   library.value = lib.data
+  usage.value = new Map(use.data.map((u) => [u.trackId, u]))
+  playlistNames.value = new Map(all.data.map((p) => [p.id, p.name]))
   items.value = pl.data.items.map((it) => ({
     uid: `e${it.id}`,
     trackId: it.trackId,
@@ -106,6 +124,10 @@ async function save() {
           <span>{{ t('editor.library') }}</span>
           <InputText v-model="search" :placeholder="t('common.search')" size="small" />
         </div>
+        <div class="legend muted">
+          <span><i class="pi pi-list mark mark-pl" /> {{ t('editor.legendPlaylist') }}</span>
+          <span><i class="pi pi-calendar mark mark-sched" /> {{ t('editor.legendSchedule') }}</span>
+        </div>
         <draggable :list="filteredLibrary" :group="{ name: 'tracks', pull: 'clone', put: false }"
           :clone="cloneTrack" item-key="id" :sort="false" class="list">
           <template #item="{ element }">
@@ -115,6 +137,13 @@ async function save() {
                 <div class="t">{{ element.title || element.fileName }}</div>
                 <div class="a muted">{{ element.artist }}</div>
               </div>
+              <i v-if="otherPlaylists(element.id).length" class="pi pi-list mark mark-pl"
+                v-tooltip.top="t('editor.usedInPlaylists', {
+                  count: otherPlaylists(element.id).length,
+                  names: otherPlaylists(element.id).join(', '),
+                })" />
+              <i v-if="scheduledCount(element.id)" class="pi pi-calendar mark mark-sched"
+                v-tooltip.top="t('editor.usedInSchedule', { count: scheduledCount(element.id) })" />
               <span class="muted">{{ fmtDuration(element.durationSec) }}</span>
             </div>
           </template>
@@ -163,6 +192,11 @@ async function save() {
 .lib-row { background: var(--surface-2); margin-bottom: .35rem; cursor: grab; }
 .tl-row { background: var(--surface-3); margin-bottom: .4rem; }
 .handle { cursor: grab; color: var(--text-dim); }
+.mark { font-size: .8rem; flex: none; }
+.mark-pl { color: var(--accent); }
+.mark-sched { color: var(--warn); }
+.legend { display: flex; gap: 1rem; padding: .4rem 1rem; font-size: .78rem; border-bottom: 1px solid var(--border); }
+.legend span { display: inline-flex; align-items: center; gap: .3rem; }
 .meta { flex: 1; min-width: 0; }
 .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .a { font-size: .8rem; }
