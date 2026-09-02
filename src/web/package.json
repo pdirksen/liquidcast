@@ -3,17 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
+  "licensePolicy": "Liquidcast is open source. Every dependency must carry an OSI-compatible license. PrimeTek relicensed the PrimeUI family under a proprietary license starting at primevue 5.0, @primevue/themes 5.0 and primeicons 8.0 (revenue/headcount-gated, requires a license key, forbids reverse-engineering and redistribution), so those majors are hard-blocked by scripts/check-licenses below. Do not raise the caps to silence it — migrate off PrimeVue instead. Note also that vuedraggable's npm 'latest' tag points at 2.24.3, the Vue 2 line; 4.1.0 is the Vue 3 build, so never 'upgrade' it.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "npm run check:licenses && vite build",
+    "preview": "vite preview",
+    "check:licenses": "node -e \"const f=require('fs');let bad=0;for(const [p,max] of [['primevue',4],['@primevue/themes',4],['primeicons',7]]){let v;try{v=JSON.parse(f.readFileSync('node_modules/'+p+'/package.json','utf8')).version}catch{continue}if(+v.split('.')[0]>max){console.error('LICENSE GUARD: '+p+'@'+v+' is under the proprietary PrimeUI License (applies from major '+(max+1)+'). Liquidcast must stay open source — pin '+p+' to '+max+'.x.');bad=1}}process.exit(bad)\"",
+    "postinstall": "npm run check:licenses"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
     "@primevue/themes": "^4.5.4",
     "axios": "^1.18.1",
     "chart.js": "^4.5.1",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.3",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.5",
     "vue": "^3.5.38",
