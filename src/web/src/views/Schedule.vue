@@ -201,6 +201,12 @@ function onRemove(id) {
 </template>
 
 <style scoped>
+/* Dragging the timeline to pan is a plain mousedown-drag, which a text selection
+   hijacks into a selection drag. Nothing on this page is worth selecting, so turn
+   it off page-wide (inherits into the grid and panel) and keep it in inputs. */
+.page { user-select: none; }
+.page :deep(input), .page :deep(textarea) { user-select: text; }
+
 .toolbar { display: flex; align-items: center; gap: .5rem; }
 .daypick { width: 11rem; }
 .layout { display: grid; grid-template-columns: 1fr clamp(300px, 22vw, 560px); gap: 1rem; align-items: stretch; }

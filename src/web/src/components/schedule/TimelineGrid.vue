@@ -205,6 +205,8 @@ function onPanStart(e) {
   if (e.button !== 0 || e.target.closest('.entry')) return
   const el = scroller.value
   if (!el) return
+  // A selection carried in from elsewhere would turn the pan into a selection drag.
+  window.getSelection()?.removeAllRanges()
   const startX = e.clientX
   const startLeft = el.scrollLeft
   const move = (ev) => {
