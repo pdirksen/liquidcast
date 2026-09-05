@@ -31,6 +31,9 @@ public class RuntimeConfig
     public string LogPath => Path.Combine(DataPathAbsolute, "liquidsoap.log");
     public long MaxUploadBytes => (long)Settings.MaxUploadSizeMb * 1024 * 1024;
 
+    /// <summary>Schedule entries starting before this instant are archived.</summary>
+    public DateTime ArchiveCutoffUtc => DateTime.UtcNow.AddDays(-Settings.ArchiveAfterDays);
+
     public void EnsureDirectories()
     {
         Directory.CreateDirectory(DataPathAbsolute);

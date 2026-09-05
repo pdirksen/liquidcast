@@ -16,7 +16,7 @@ public static class ScheduleEndpoints
     {
         var g = app.MapGroup("/api/schedule").RequireAuthorization();
 
-        g.MapGet("/", async (AppDbContext db, DateTime? from, DateTime? to) =>
+        g.MapGet("/", async (AppDbContext db, RuntimeConfig cfg, DateTime? from, DateTime? to) =>
         {
             if (from is not { } f || to is not { } t)
                 return Results.BadRequest(new { error = "from and to are required." });
@@ -30,12 +30,13 @@ public static class ScheduleEndpoints
                 .OrderBy(e => e.StartUtc)
                 .ToListAsync();
 
+            var cutoff = cfg.ArchiveCutoffUtc;
             return Results.Ok(entries
                 .Where(e => ScheduleMath.EndUtc(e) > f)
-                .Select(ToResponse).ToList());
+                .Select(e => ToResponse(e, cutoff)).ToList());
         });
 
-        g.MapPost("/", async (EntryDto dto, AppDbContext db) =>
+        g.MapPost("/", async (EntryDto dto, AppDbContext db, RuntimeConfig cfg) =>
         {
             var (candidate, error) = await BuildCandidateAsync(db, dto, null);
             if (error is not null) return error;
@@ -46,10 +47,10 @@ public static class ScheduleEndpoints
             db.ScheduledTracks.Add(entry);
             await db.SaveChangesAsync();
             candidate!.Id = entry.Id;
-            return Results.Created($"/api/schedule/{entry.Id}", ToResponse(candidate));
+            return Results.Created($"/api/schedule/{entry.Id}", ToResponse(candidate, cfg.ArchiveCutoffUtc));
         });
 
-        g.MapPut("/{id:int}", async (int id, EntryDto dto, AppDbContext db) =>
+        g.MapPut("/{id:int}", async (int id, EntryDto dto, AppDbContext db, RuntimeConfig cfg) =>
         {
             var existing = await db.ScheduledTracks.FirstOrDefaultAsync(e => e.Id == id);
             if (existing is null) return Results.NotFound();
@@ -60,7 +61,7 @@ public static class ScheduleEndpoints
             Copy(candidate!, existing);
             await db.SaveChangesAsync();
             candidate!.Id = id;
-            return Results.Ok(ToResponse(candidate));
+            return Results.Ok(ToResponse(candidate, cfg.ArchiveCutoffUtc));
         });
 
         // Custom line names: { "1": "Morning Show", ... } — lines without a row use the
@@ -95,8 +96,9 @@ public static class ScheduleEndpoints
         });
     }
 
-    private static object ToResponse(ScheduledTrack e) => new
+    private static object ToResponse(ScheduledTrack e, DateTime archiveCutoffUtc) => new
     {
+        Archived = e.StartUtc < archiveCutoffUtc,
         e.Id,
         e.TrackId,
         Title = e.Track?.Title ?? e.Track?.FileName,

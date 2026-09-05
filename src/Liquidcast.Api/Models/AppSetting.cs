@@ -69,6 +69,11 @@ public class AppSetting
     public ControlMode EffectiveControlMode =>
         OperatingSystem.IsWindows() ? ControlMode.Tcp : ControlMode;
 
+    // Schedule
+    /// <summary>A schedule entry whose start is older than this many days counts as archived:
+    /// greyed out on the Schedule timeline and counted under its own marker in the playlist editor.</summary>
+    public int ArchiveAfterDays { get; set; } = 7;
+
     // Storage
     public string DataPath { get; set; } = "data";
 

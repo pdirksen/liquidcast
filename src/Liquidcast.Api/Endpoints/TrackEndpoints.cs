@@ -35,33 +35,40 @@ public static class TrackEndpoints
 
         // Where each track is already used — the playlist editor marks library rows that are
         // in another playlist and/or on the schedule. Only tracks with at least one use are
-        // returned, so the payload stays small on a big library.
-        g.MapGet("/usage", async (AppDbContext db) =>
+        // returned, so the payload stays small on a big library. Entries older than
+        // ArchiveAfterDays are archived: they get their own count, not the schedule one.
+        g.MapGet("/usage", async (AppDbContext db, RuntimeConfig cfg) =>
         {
             var inPlaylists = await db.PlaylistItems.AsNoTracking()
                 .Select(i => new { i.TrackId, i.PlaylistId })
                 .Distinct()
                 .ToListAsync();
+            var cutoff = cfg.ArchiveCutoffUtc;
             var scheduled = await db.ScheduledTracks.AsNoTracking()
                 .GroupBy(s => s.TrackId)
-                .Select(x => new { TrackId = x.Key, Count = x.Count() })
+                .Select(x => new
+                {
+                    TrackId = x.Key,
+                    Count = x.Count(s => s.StartUtc >= cutoff),
+                    Archived = x.Count(s => s.StartUtc < cutoff),
+                })
                 .ToListAsync();
 
-            var byTrack = new Dictionary<int, (List<int> Playlists, int Scheduled)>();
+            var byTrack = new Dictionary<int, (List<int> Playlists, int Scheduled, int Archived)>();
             foreach (var row in inPlaylists)
             {
                 if (!byTrack.TryGetValue(row.TrackId, out var e))
-                    e = byTrack[row.TrackId] = (new List<int>(), 0);
+                    e = byTrack[row.TrackId] = (new List<int>(), 0, 0);
                 e.Playlists.Add(row.PlaylistId);
             }
             foreach (var row in scheduled)
             {
                 byTrack.TryGetValue(row.TrackId, out var e);
-                byTrack[row.TrackId] = (e.Playlists ?? new List<int>(), row.Count);
+                byTrack[row.TrackId] = (e.Playlists ?? new List<int>(), row.Count, row.Archived);
             }
 
             return Results.Ok(byTrack
-                .Select(kv => new TrackUsageDto(kv.Key, kv.Value.Playlists, kv.Value.Scheduled))
+                .Select(kv => new TrackUsageDto(kv.Key, kv.Value.Playlists, kv.Value.Scheduled, kv.Value.Archived))
                 .ToList());
         });
 
@@ -160,5 +167,5 @@ public static class TrackEndpoints
     private record MoveDto(string? Folder);
     private record TrackListDto(int Id, string FileName, string RelativePath, string? Title,
         string? Artist, string? Album, double DurationSec, int Bitrate, long SizeBytes);
-    private record TrackUsageDto(int TrackId, List<int> PlaylistIds, int ScheduledCount);
+    private record TrackUsageDto(int TrackId, List<int> PlaylistIds, int ScheduledCount, int ArchivedCount);
 }

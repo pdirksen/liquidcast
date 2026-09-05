@@ -180,6 +180,14 @@ function clearLibrary() {
               </div>
               <p class="muted" style="font-size:.82rem">{{ t('settings.fallbackNote', { dir: 'data/fallback' }) }}</p>
             </section>
+            <section class="card">
+              <h3>{{ t('settings.scheduleSection') }}</h3>
+              <div class="grid2">
+                <label>{{ t('settings.archiveAfterDays') }}</label>
+                <InputNumber v-model="s.archiveAfterDays" :min="1" :max="3650" :useGrouping="false" showButtons />
+              </div>
+              <p class="muted" style="font-size:.82rem">{{ t('settings.archiveAfterDaysHint') }}</p>
+            </section>
           </div>
         </TabPanel>
 

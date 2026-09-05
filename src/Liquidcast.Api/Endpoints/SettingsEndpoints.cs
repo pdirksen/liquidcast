@@ -39,6 +39,7 @@ public static class SettingsEndpoints
             s.ControlMode = dto.ControlMode;
             s.TelnetPort = dto.TelnetPort;
             s.LiquidsoapLogLevel = dto.LiquidsoapLogLevel;
+            s.ArchiveAfterDays = Math.Clamp(dto.ArchiveAfterDays, 1, 3650);
             s.DataPath = dto.DataPath;
             s.MaxUploadSizeMb = dto.MaxUploadSizeMb;
             s.LoginRateLimitPermitLimit = dto.LoginRateLimitPermitLimit;

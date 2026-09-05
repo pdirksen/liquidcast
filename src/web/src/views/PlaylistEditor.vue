@@ -21,7 +21,7 @@ const items = ref([])
 const library = ref([])
 const search = ref('')
 const saving = ref(false)
-// trackId -> { playlistIds, scheduledCount }; playlistId -> name (for the marker tooltips)
+// trackId -> { playlistIds, scheduledCount, archivedCount }; playlistId -> name (marker tooltips)
 const usage = ref(new Map())
 const playlistNames = ref(new Map())
 
@@ -34,6 +34,10 @@ function otherPlaylists(trackId) {
 }
 function scheduledCount(trackId) {
   return usage.value.get(trackId)?.scheduledCount || 0
+}
+// Schedule entries past the archive window — counted apart from the live schedule.
+function archivedCount(trackId) {
+  return usage.value.get(trackId)?.archivedCount || 0
 }
 
 // Cap rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
@@ -127,6 +131,7 @@ async function save() {
         <div class="legend muted">
           <span><i class="pi pi-list mark mark-pl" /> {{ t('editor.legendPlaylist') }}</span>
           <span><i class="pi pi-calendar mark mark-sched" /> {{ t('editor.legendSchedule') }}</span>
+          <span><i class="pi pi-inbox mark mark-arch" /> {{ t('editor.legendArchived') }}</span>
         </div>
         <draggable :list="filteredLibrary" :group="{ name: 'tracks', pull: 'clone', put: false }"
           :clone="cloneTrack" item-key="id" :sort="false" class="list">
@@ -144,6 +149,8 @@ async function save() {
                 })" />
               <i v-if="scheduledCount(element.id)" class="pi pi-calendar mark mark-sched"
                 v-tooltip.top="t('editor.usedInSchedule', { count: scheduledCount(element.id) })" />
+              <i v-if="archivedCount(element.id)" class="pi pi-inbox mark mark-arch"
+                v-tooltip.top="t('editor.usedInArchive', { count: archivedCount(element.id) })" />
               <span class="muted">{{ fmtDuration(element.durationSec) }}</span>
             </div>
           </template>
@@ -195,6 +202,7 @@ async function save() {
 .mark { font-size: .8rem; flex: none; }
 .mark-pl { color: var(--accent); }
 .mark-sched { color: var(--warn); }
+.mark-arch { color: var(--text-dim); }
 .legend { display: flex; gap: 1rem; padding: .4rem 1rem; font-size: .78rem; border-bottom: 1px solid var(--border); }
 .legend span { display: inline-flex; align-items: center; gap: .3rem; }
 .meta { flex: 1; min-width: 0; }

@@ -223,7 +223,8 @@ function onPanStart(e) {
 
 function entryTooltip(e) {
   const ovr = e.override ? ` · ${t('schedule.override')}` : ''
-  return `${e.artist ? e.artist + ' - ' : ''}${e.title}\n${hhmm(e.startUtc)} – ${hhmm(e.endUtc)} · ${lineLabel(e.line)}${ovr}`
+  const arc = e.archived ? ` · ${t('schedule.archived')}` : ''
+  return `${e.artist ? e.artist + ' - ' : ''}${e.title}\n${hhmm(e.startUtc)} – ${hhmm(e.endUtc)} · ${lineLabel(e.line)}${ovr}${arc}`
 }
 </script>
 
@@ -251,7 +252,7 @@ function entryTooltip(e) {
           @dragleave="onDragLeave"
           @drop.prevent="onDrop($event, l.line)">
           <div v-for="e in laneEntries(l.line)" :key="e.id" class="entry"
-            :class="[`c${l.line}`, { ovr: e.override, dragging: dragPayload?.entryId === e.id }]"
+            :class="[`c${l.line}`, { ovr: e.override, archived: e.archived, dragging: dragPayload?.entryId === e.id }]"
             :style="entryStyle(e)" :title="entryTooltip(e)" draggable="true"
             @dragstart="onEntryDragStart($event, e)" @dragend="emit('drag-end')"
             @click="emit('edit', e)">
@@ -298,6 +299,10 @@ function entryTooltip(e) {
 .e-time { font-size: .68rem; opacity: .75; }
 .entry .pi-bolt { position: absolute; top: 3px; right: 4px; font-size: .65rem; }
 .entry.ovr { border-style: dashed; }
+/* Older than the archive window: drop the line color for light grey. Two classes
+   beat the single-class .cN line colors, so no !important is needed. */
+.entry.archived { background: rgba(148, 163, 184, .12); border-color: rgba(148, 163, 184, .35);
+  color: var(--text-dim); }
 
 /* per-line colors: fallback gray, P1 strongest → P8 muted */
 .c0 { background: rgba(148, 163, 184, .22); border-color: rgba(148, 163, 184, .55); }
