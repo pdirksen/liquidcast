@@ -1,7 +1,9 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { datePickerProps, fmtDuration, formatDateTime } from '../../util'
+import { datePickerProps, fmtDuration, fmtBytes, formatDateTime } from '../../util'
+import { api } from '../../api/client'
+import { usePreview } from '../../composables/preview'
 import { usePrefs } from '../../stores/prefs'
 import { classifyOverlap, LINE_ORDER } from './scheduleMath'
 import { useLineNames } from '../../composables/lineNames'
@@ -21,6 +23,7 @@ const emit = defineEmits(['update:visible', 'save', 'remove'])
 
 const { t } = useI18n()
 const prefs = usePrefs()
+const preview = usePreview()
 const dpProps = computed(() => datePickerProps(prefs.dateFormat))
 
 const { lineLabel } = useLineNames()
@@ -54,6 +57,22 @@ const canSave = computed(() =>
   !!props.draft && !conflict.value.sameLine &&
   (!conflict.value.needsOverride || props.draft.override))
 
+// The schedule payload carries only title/artist; the rest of the tags comes from
+// the track itself, fetched when the dialog opens (and cleared when it closes so a
+// re-open never shows the previous track's tags).
+const meta = ref(null)
+watch(() => [props.visible, props.draft?.trackId], async ([vis, trackId]) => {
+  meta.value = null
+  if (!vis || !trackId) return
+  try {
+    const { data } = await api.get(`/tracks/${trackId}`)
+    if (props.visible && props.draft?.trackId === trackId) meta.value = data
+  } catch { /* keep the title/artist the draft already has */ }
+}, { immediate: true })
+
+// Closing the dialog (save, cancel, delete, Esc) stops the preview.
+watch(() => props.visible, (v) => { if (!v) preview.stop() })
+
 const fmtEnd = computed(() => (endDate.value ? formatDateTime(endDate.value.toISOString(), prefs.dateFormat) : ''))
 </script>
 
@@ -63,9 +82,28 @@ const fmtEnd = computed(() => (endDate.value ? formatDateTime(endDate.value.toIS
     <div v-if="draft" class="form">
       <label>{{ t('schedule.track') }}</label>
       <div class="track-label">
-        <b>{{ draft.title }}</b>
-        <span v-if="draft.artist" class="muted"> · {{ draft.artist }}</span>
-        <span class="muted"> · {{ fmtDuration(draft.effDurationSec) }}</span>
+        <div class="track-head">
+          <div class="track-name">
+            <b>{{ draft.title }}</b>
+            <span v-if="draft.artist" class="muted"> · {{ draft.artist }}</span>
+            <span class="muted"> · {{ fmtDuration(draft.effDurationSec) }}</span>
+          </div>
+          <Button text size="small"
+            :icon="preview.isLoading(draft.trackId) ? 'pi pi-spin pi-spinner'
+              : preview.isPlaying(draft.trackId) ? 'pi pi-pause' : 'pi pi-play'"
+            v-tooltip.top="preview.isPlaying(draft.trackId) ? t('tracks.pause') : t('tracks.play')"
+            @click="preview.toggle(draft.trackId)" />
+          <Button v-if="preview.isActive(draft.trackId)" icon="pi pi-forward" text size="small"
+            v-tooltip.top="t('tracks.skip10')" @click="preview.skip(10)" />
+        </div>
+        <dl v-if="meta" class="tags">
+          <template v-if="meta.album"><dt>{{ t('tracks.album') }}</dt><dd>{{ meta.album }}</dd></template>
+          <dt>{{ t('tracks.duration') }}</dt><dd>{{ fmtDuration(meta.durationSec) }}</dd>
+          <dt>{{ t('tracks.bitrate') }}</dt><dd>{{ meta.bitrate ? meta.bitrate + ' kbps' : '—' }}</dd>
+          <dt>{{ t('tracks.size') }}</dt><dd>{{ fmtBytes(meta.sizeBytes) }}</dd>
+          <dt>{{ t('tracks.file') }}</dt><dd class="path">{{ meta.relativePath || meta.fileName }}</dd>
+          <dt>{{ t('tracks.added') }}</dt><dd>{{ formatDateTime(meta.uploadedAt, prefs.dateFormat) }}</dd>
+        </dl>
       </div>
 
       <label>{{ t('schedule.line') }}</label>
@@ -104,6 +142,13 @@ const fmtEnd = computed(() => (endDate.value ? formatDateTime(endDate.value.toIS
 .form { display: flex; flex-direction: column; gap: .4rem; }
 .form > label { font-size: .8rem; color: var(--text-muted); margin-top: .4rem; }
 .track-label { padding: .4rem .6rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; }
+.track-head { display: flex; align-items: center; gap: .3rem; }
+.track-name { flex: 1; min-width: 0; }
+.tags { display: grid; grid-template-columns: auto 1fr; gap: .1rem .6rem; margin: .45rem 0 .1rem;
+  padding-top: .45rem; border-top: 1px solid var(--border); font-size: .8rem; }
+.tags dt { color: var(--text-muted); }
+.tags dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tags dd.path { word-break: break-all; }
 .end { padding: .2rem 0; }
 .dim { color: var(--text-dim); }
 .warn { display: flex; align-items: center; gap: .5rem; margin-top: .6rem; padding: .5rem .6rem; border-radius: 8px;

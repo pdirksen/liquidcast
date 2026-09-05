@@ -150,6 +150,17 @@ public static class TrackEndpoints
             return Results.File(track.StoredPath, "audio/mpeg", enableRangeProcessing: true);
         });
 
+        // Full metadata for one track — the schedule dialog shows it for the entry's
+        // track, which the schedule payload only carries title/artist for.
+        g.MapGet("/{id:int}", async (int id, AppDbContext db) =>
+        {
+            var t = await db.Tracks.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return t is null
+                ? Results.NotFound()
+                : Results.Ok(new TrackDetailDto(t.Id, t.FileName, t.RelativePath, t.Title, t.Artist,
+                    t.Album, t.DurationSec, t.Bitrate, t.SizeBytes, t.UploadedAt));
+        });
+
         g.MapDelete("/{id:int}", async (int id, TrackService svc, CancellationToken ct) =>
         {
             try
@@ -167,5 +178,7 @@ public static class TrackEndpoints
     private record MoveDto(string? Folder);
     private record TrackListDto(int Id, string FileName, string RelativePath, string? Title,
         string? Artist, string? Album, double DurationSec, int Bitrate, long SizeBytes);
+    private record TrackDetailDto(int Id, string FileName, string RelativePath, string? Title,
+        string? Artist, string? Album, double DurationSec, int Bitrate, long SizeBytes, DateTime UploadedAt);
     private record TrackUsageDto(int TrackId, List<int> PlaylistIds, int ScheduledCount, int ArchivedCount);
 }
