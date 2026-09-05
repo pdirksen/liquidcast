@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client'
 import { fmtDuration, fmtBytes } from '../util'
+import { usePreview } from '../composables/preview'
 import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -15,6 +16,7 @@ import { useConfirm } from 'primevue/useconfirm'
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const preview = usePreview()
 const tracks = ref([])
 const folders = ref([])
 const search = ref('')
@@ -165,6 +167,11 @@ function remove(track) {
   })
 }
 
+async function playPreview(track) {
+  if (!await preview.toggle(track.id))
+    toast.add({ severity: 'error', summary: t('tracks.previewFailed'), life: 3000 })
+}
+
 async function createFolder() {
   const path = newFolderName.value.trim()
   if (!path) return
@@ -297,6 +304,19 @@ async function onDrop(event, folder) {
       <Column :header="t('tracks.size')">
         <template #body="{ node }"><span v-if="!node.data.isFolder">{{ fmtBytes(node.data.sizeBytes) }}</span></template>
       </Column>
+      <Column style="width:5rem">
+        <template #body="{ node }">
+          <span v-if="!node.data.isFolder" class="preview-btns">
+            <Button text size="small"
+              :icon="preview.isLoading(node.data.id) ? 'pi pi-spin pi-spinner'
+                : preview.isPlaying(node.data.id) ? 'pi pi-pause' : 'pi pi-play'"
+              v-tooltip.left="preview.isPlaying(node.data.id) ? t('tracks.pause') : t('tracks.play')"
+              @click="playPreview(node.data)" />
+            <Button v-if="preview.isActive(node.data.id)" icon="pi pi-forward" text size="small"
+              v-tooltip.left="t('tracks.skip10')" @click="preview.skip(10)" />
+          </span>
+        </template>
+      </Column>
       <Column style="width:3rem">
         <template #body="{ node }">
           <Button v-if="!node.data.isFolder" icon="pi pi-trash" text severity="danger" size="small" @click="remove(node.data)" />
@@ -329,5 +349,6 @@ async function onDrop(event, folder) {
 .tnode .drag-handle { color: var(--text-muted); font-size: .8rem; }
 .fnode { display: flex; align-items: center; width: 100%; min-height: 1.8rem; border-radius: 6px; padding: 0 .35rem; }
 .fnode.over { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--accent); }
+.preview-btns { display: inline-flex; align-items: center; }
 .scanning { color: var(--text-muted); font-size: .85rem; display: inline-flex; align-items: center; gap: .4rem; }
 </style>

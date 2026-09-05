@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import draggable from 'vuedraggable'
 import { api } from '../api/client'
 import { fmtDuration } from '../util'
+import { usePreview } from '../composables/preview'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -14,6 +15,7 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const toast = useToast()
+const preview = usePreview()
 const id = Number(route.params.id)
 
 const playlist = ref(null)
@@ -92,6 +94,11 @@ onMounted(load)
 
 function removeItem(i) { items.value.splice(i, 1) }
 
+async function playPreview(trackId) {
+  if (!await preview.toggle(trackId))
+    toast.add({ severity: 'error', summary: t('tracks.previewFailed'), life: 3000 })
+}
+
 async function save() {
   saving.value = true
   try {
@@ -142,6 +149,13 @@ async function save() {
                 <div class="t">{{ element.title || element.fileName }}</div>
                 <div class="a muted">{{ element.artist }}</div>
               </div>
+              <Button text size="small" class="play"
+                :icon="preview.isLoading(element.id) ? 'pi pi-spin pi-spinner'
+                  : preview.isPlaying(element.id) ? 'pi pi-pause' : 'pi pi-play'"
+                v-tooltip.top="preview.isPlaying(element.id) ? t('tracks.pause') : t('tracks.play')"
+                @click.stop="playPreview(element.id)" />
+              <Button v-if="preview.isActive(element.id)" icon="pi pi-forward" text size="small"
+                class="play" v-tooltip.top="t('tracks.skip10')" @click.stop="preview.skip(10)" />
               <i v-if="otherPlaylists(element.id).length" class="pi pi-list mark mark-pl"
                 v-tooltip.top="t('editor.usedInPlaylists', {
                   count: otherPlaylists(element.id).length,
@@ -172,6 +186,13 @@ async function save() {
                 <div class="t">{{ element.title }}</div>
                 <div class="a muted">{{ element.artist }} · {{ fmtDuration(element.durationSec) }}</div>
               </div>
+              <Button text size="small" class="play"
+                :icon="preview.isLoading(element.trackId) ? 'pi pi-spin pi-spinner'
+                  : preview.isPlaying(element.trackId) ? 'pi pi-pause' : 'pi pi-play'"
+                v-tooltip.top="preview.isPlaying(element.trackId) ? t('tracks.pause') : t('tracks.play')"
+                @click="playPreview(element.trackId)" />
+              <Button v-if="preview.isActive(element.trackId)" icon="pi pi-forward" text size="small"
+                class="play" v-tooltip.top="t('tracks.skip10')" @click="preview.skip(10)" />
               <div class="xf" v-tooltip.top="t('editor.crossfadeTip')">
                 <InputNumber v-model="element.crossfadeSec" :min="0" :max="30" :step="0.5"
                   :minFractionDigits="0" :maxFractionDigits="1"
@@ -199,6 +220,7 @@ async function save() {
 .lib-row { background: var(--surface-2); margin-bottom: .35rem; cursor: grab; }
 .tl-row { background: var(--surface-3); margin-bottom: .4rem; }
 .handle { cursor: grab; color: var(--text-dim); }
+.play { flex: none; width: 2rem; height: 2rem; }
 .mark { font-size: .8rem; flex: none; }
 .mark-pl { color: var(--accent); }
 .mark-sched { color: var(--warn); }
