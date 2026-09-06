@@ -22,6 +22,7 @@ const playlist = ref(null)
 const items = ref([])
 const library = ref([])
 const search = ref('')
+const sortDir = ref('asc')
 const saving = ref(false)
 // trackId -> { playlistIds, scheduledCount, archivedCount }; playlistId -> name (marker tooltips)
 const usage = ref(new Map())
@@ -44,11 +45,15 @@ function archivedCount(trackId) {
 
 // Cap rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
 const LIBRARY_CAP = 200
+const libName = (x) => x.title || x.fileName || ''
 const matches = computed(() => {
   const t = search.value.toLowerCase()
-  return library.value.filter((x) =>
-    !t || (x.title || '').toLowerCase().includes(t) || (x.artist || '').toLowerCase().includes(t) ||
-    x.fileName.toLowerCase().includes(t))
+  const dir = sortDir.value === 'desc' ? -1 : 1
+  return library.value
+    .filter((x) =>
+      !t || (x.title || '').toLowerCase().includes(t) || (x.artist || '').toLowerCase().includes(t) ||
+      x.fileName.toLowerCase().includes(t))
+    .sort((a, b) => dir * libName(a).localeCompare(libName(b), undefined, { numeric: true, sensitivity: 'base' }))
 })
 const filteredLibrary = computed(() => matches.value.slice(0, LIBRARY_CAP))
 
@@ -133,7 +138,12 @@ async function save() {
       <div class="col">
         <div class="col-head">
           <span>{{ t('editor.library') }}</span>
-          <InputText v-model="search" :placeholder="t('common.search')" size="small" />
+          <span class="head-tools">
+            <InputText v-model="search" :placeholder="t('common.search')" size="small" />
+            <Button text size="small" :icon="sortDir === 'asc' ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up-alt'"
+              v-tooltip.top="sortDir === 'asc' ? t('editor.sortDesc') : t('editor.sortAsc')"
+              @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'" />
+          </span>
         </div>
         <div class="legend muted">
           <span><i class="pi pi-list mark mark-pl" /> {{ t('editor.legendPlaylist') }}</span>
@@ -225,6 +235,7 @@ async function save() {
 .mark-pl { color: var(--accent); }
 .mark-sched { color: var(--warn); }
 .mark-arch { color: var(--text-dim); }
+.head-tools { display: flex; align-items: center; gap: .35rem; }
 .legend { display: flex; gap: 1rem; padding: .4rem 1rem; font-size: .78rem; border-bottom: 1px solid var(--border); }
 .legend span { display: inline-flex; align-items: center; gap: .3rem; }
 .meta { flex: 1; min-width: 0; }
