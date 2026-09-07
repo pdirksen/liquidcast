@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import draggable from 'vuedraggable'
@@ -9,6 +9,7 @@ import { usePreview } from '../composables/preview'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Paginator from 'primevue/paginator'
 import { useToast } from 'primevue/usetoast'
 
 const route = useRoute()
@@ -43,8 +44,9 @@ function archivedCount(trackId) {
   return usage.value.get(trackId)?.archivedCount || 0
 }
 
-// Cap rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
-const LIBRARY_CAP = 200
+// Page the rendered rows — vuedraggable + thousands of DOM nodes is the perf sink, not the filter.
+const first = ref(0)
+const rows = ref(50)
 const libName = (x) => x.title || x.fileName || ''
 const matches = computed(() => {
   const t = search.value.toLowerCase()
@@ -55,7 +57,9 @@ const matches = computed(() => {
       x.fileName.toLowerCase().includes(t))
     .sort((a, b) => dir * libName(a).localeCompare(libName(b), undefined, { numeric: true, sensitivity: 'base' }))
 })
-const filteredLibrary = computed(() => matches.value.slice(0, LIBRARY_CAP))
+const filteredLibrary = computed(() => matches.value.slice(first.value, first.value + rows.value))
+// Filtering/sorting can shrink the result below the current page — jump back to page 1.
+watch(matches, (m) => { if (first.value >= m.length) first.value = 0 })
 
 const totalDuration = computed(() => items.value.reduce((s, i) => s + (i.durationSec || 0), 0))
 
@@ -179,9 +183,17 @@ async function save() {
             </div>
           </template>
         </draggable>
-        <div v-if="matches.length > filteredLibrary.length" class="muted cap-hint">
-          {{ t('editor.libraryCapped', { shown: filteredLibrary.length, total: matches.length }) }}
-        </div>
+        <Paginator v-model:first="first" v-model:rows="rows" :totalRecords="matches.length"
+          :rowsPerPageOptions="[25, 50, 100, 250]" class="lib-pager"
+          template="PrevPageLink PageLinks NextPageLink RowsPerPageDropdown">
+          <template #start>
+            <span class="muted pager-report">{{ t('editor.libraryPageReport', {
+              first: matches.length ? first + 1 : 0,
+              last: Math.min(first + rows, matches.length),
+              total: matches.length,
+            }) }}</span>
+          </template>
+        </Paginator>
       </div>
 
       <!-- Timeline: drop target + reorder -->
@@ -243,6 +255,7 @@ async function save() {
 .a { font-size: .8rem; }
 .idx { width: 1.4rem; text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .empty { padding: 2rem; text-align: center; }
-.cap-hint { padding: .5rem 1rem .7rem; font-size: .82rem; border-top: 1px solid var(--border); }
+.lib-pager { border-top: 1px solid var(--border); flex-wrap: wrap; }
+.pager-report { font-size: .82rem; }
 @media (max-width: 850px) { .editor { grid-template-columns: 1fr; } }
 </style>
