@@ -48,6 +48,13 @@ function archivedCount(trackId) {
 const first = ref(0)
 const rows = ref(50)
 const libName = (x) => x.title || x.fileName || ''
+// relativePath e.g. "Shows/Morning/a.mp3" — drop the filename, keep the folder segments.
+// Root-level tracks get "/" so every row shows where it lives.
+function libFolder(x) {
+  const parts = (x.relativePath || x.fileName || '').split('/')
+  parts.pop()
+  return '/' + parts.join('/')
+}
 const matches = computed(() => {
   const t = search.value.toLowerCase()
   const dir = sortDir.value === 'desc' ? -1 : 1
@@ -161,7 +168,10 @@ async function save() {
               <i class="pi pi-bars handle" />
               <div class="meta">
                 <div class="t">{{ element.title || element.fileName }}</div>
-                <div class="a muted">{{ element.artist }}</div>
+                <div class="a muted">
+                  <span v-if="element.artist">{{ element.artist }} · </span>
+                  <span class="folder"><i class="pi pi-folder" />{{ libFolder(element) }}</span>
+                </div>
               </div>
               <Button text size="small" class="play"
                 :icon="preview.isLoading(element.id) ? 'pi pi-spin pi-spinner'
@@ -242,6 +252,8 @@ async function save() {
 .lib-row { background: var(--surface-2); margin-bottom: .35rem; cursor: grab; }
 .tl-row { background: var(--surface-3); margin-bottom: .4rem; }
 .handle { cursor: grab; color: var(--text-dim); }
+.folder { display: inline-flex; align-items: center; gap: .25rem; }
+.folder .pi-folder { font-size: .75rem; }
 .play { flex: none; width: 2rem; height: 2rem; }
 .mark { font-size: .8rem; flex: none; }
 .mark-pl { color: var(--accent); }
