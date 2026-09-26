@@ -40,6 +40,16 @@ async function submit() {
     <div class="glow glow-b" />
     <div class="glow glow-c" />
 
+    <!-- Background art: dot grid and liquid waves. Decorative only. -->
+    <div class="art" aria-hidden="true">
+      <div class="dots" />
+
+      <svg v-for="w in 3" :key="w" :class="['wave', `wave-${w}`]" viewBox="0 0 2880 200" preserveAspectRatio="none">
+        <path d="M0 100 C120 40 240 40 360 100 S600 160 720 100 S960 40 1080 100 S1320 160 1440 100
+                 S1680 40 1800 100 S2040 160 2160 100 S2400 40 2520 100 S2760 160 2880 100 V200 H0 Z" />
+      </svg>
+    </div>
+
     <form class="card" @submit.prevent="submit">
       <div class="brand">
         <svg class="mark" viewBox="0 0 120 120" role="img" aria-label="Liquidcast">
@@ -106,6 +116,38 @@ async function submit() {
 @keyframes drift {
   from { transform: translate(0, 0) scale(1); }
   to { transform: translate(2.5rem, 1.5rem) scale(1.08); }
+}
+
+.art { position: absolute; inset: 0; pointer-events: none; }
+
+/* Faint dot grid, fading out toward the edges. */
+.dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(234, 242, 246, 0.09) 1px, transparent 1.5px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 70%);
+}
+
+/* Layered waves; each path spans two viewport widths and loops by sliding half its length. */
+.wave {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  animation: flow linear infinite;
+}
+.wave-1 { height: 170px; fill: #3b5bf6; opacity: 0.10; animation-duration: 38s; }
+.wave-2 { height: 130px; fill: #22a7f0; opacity: 0.12; animation-duration: 26s; animation-direction: reverse; }
+.wave-3 { height: 90px; fill: #38e0f0; opacity: 0.10; animation-duration: 18s; }
+@keyframes flow {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow, .wave { animation: none; }
 }
 
 .card {
