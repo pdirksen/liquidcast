@@ -75,4 +75,25 @@ public static class StatsMath
             .Select(i => new DayCount(first.AddDays(i), counts[i]))
             .ToList();
     }
+
+    /// <summary>Continuous series of the last <paramref name="months"/> local calendar months
+    /// (ending with the current one), zero-filled. Each Date is the 1st of the month.
+    /// Used for the year range, where 365 daily bars are unreadable.</summary>
+    public static List<DayCount> PlaysPerMonth(
+        IReadOnlyList<DateTime> startsUtc, int tzOffsetMin, int months, DateTime nowUtc)
+    {
+        var local = nowUtc.AddMinutes(-tzOffsetMin);
+        var current = new DateTime(local.Year, local.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
+        var first = current.AddMonths(-(months - 1));
+        var counts = new int[months];
+        foreach (var utc in startsUtc)
+        {
+            var l = utc.AddMinutes(-tzOffsetMin);
+            var idx = (l.Year - first.Year) * 12 + l.Month - first.Month;
+            if (idx >= 0 && idx < months) counts[idx]++;
+        }
+        return Enumerable.Range(0, months)
+            .Select(i => new DayCount(first.AddMonths(i), counts[i]))
+            .ToList();
+    }
 }

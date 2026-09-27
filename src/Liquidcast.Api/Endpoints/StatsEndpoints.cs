@@ -6,13 +6,16 @@ namespace Liquidcast.Api.Endpoints;
 
 public static class StatsEndpoints
 {
-    public record ListenerStats(string Range, int Peak, DateTime? PeakUtc, double Avg,
+    /// <summary><see cref="ListenerHours"/> is total listening time (Σ listeners × 1 min per sample).</summary>
+    public record ListenerStats(string Range, int Peak, DateTime? PeakUtc, double Avg, double ListenerHours,
         List<StatsMath.HourPoint> HourProfile, List<StatsMath.WeekdayPoint> WeekdayProfile);
 
     public record TopTrack(int? TrackId, string? Title, string? Artist, int Plays, double AirtimeSec);
     public record TopArtist(string? Artist, int Plays, double AirtimeSec);
+    /// <summary><see cref="Series"/> is bucketed per <see cref="Bucket"/>: "day" for week/month,
+    /// "month" for year (12 bars instead of 365).</summary>
     public record PlayStats(string Range, int TotalPlays, double TotalAirtimeSec, int DistinctTracks,
-        List<StatsMath.DayCount> PerDay, List<TopTrack> TopTracks, List<TopArtist> TopArtists);
+        string Bucket, List<StatsMath.DayCount> Series, List<TopTrack> TopTracks, List<TopArtist> TopArtists);
 
     public static void MapStats(this IEndpointRouteBuilder app)
     {
@@ -40,8 +43,10 @@ public static class StatsEndpoints
                 if (listeners > peak) { peak = listeners; peakUtc = utc; }
             }
             var avg = samples.Count > 0 ? Math.Round((double)sum / samples.Count, 1) : 0;
+            // MonitorService stores one sample per minute, so each listener in a sample = 1 listener-minute.
+            var listenerHours = Math.Round(sum / 60.0, 1);
 
-            return Results.Ok(new ListenerStats(range == "week" ? "week" : "month", peak, peakUtc, avg,
+            return Results.Ok(new ListenerStats(range == "week" ? "week" : "month", peak, peakUtc, avg, listenerHours,
                 StatsMath.HourProfile(samples, tz), StatsMath.WeekdayProfile(samples, tz)));
         });
 
@@ -52,7 +57,12 @@ public static class StatsEndpoints
             var days = range switch { "week" => 7, "year" => 365, _ => 30 };
             var tz = ClampTz(tzOffset);
             var now = DateTime.UtcNow;
-            var from = now.AddDays(-days);
+            // Window starts at the oldest bucket's local midnight so totals match the bars.
+            var local = now.AddMinutes(-tz);
+            var from = (range == "year"
+                    ? new DateTime(local.Year, local.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11)
+                    : DateTime.SpecifyKind(local.Date, DateTimeKind.Utc).AddDays(-(days - 1)))
+                .AddMinutes(tz);
 
             var q = db.PlayHistory.AsNoTracking().Where(p => p.StartedUtc >= from);
 
@@ -77,10 +87,14 @@ public static class StatsEndpoints
                 .ToListAsync(ct);
 
             var starts = await q.Select(p => p.StartedUtc).ToListAsync(ct);
-            var perDay = StatsMath.PlaysPerDay(starts, tz, days, now);
+            var byMonth = range == "year";
+            var series = byMonth
+                ? StatsMath.PlaysPerMonth(starts, tz, 12, now)
+                : StatsMath.PlaysPerDay(starts, tz, days, now);
 
             return Results.Ok(new PlayStats(range switch { "week" => "week", "year" => "year", _ => "month" },
-                totalPlays, totalAirtime, distinctTracks, perDay, topTracks, topArtists));
+                totalPlays, totalAirtime, distinctTracks, byMonth ? "month" : "day", series,
+                topTracks, topArtists));
         });
     }
 
