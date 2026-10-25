@@ -13,13 +13,28 @@ const props = defineProps({
 const emit = defineEmits(['drop-track', 'move-entry', 'edit', 'drag-start', 'drag-end'])
 const { t } = useI18n()
 
-const DAY_MIN = 24 * 60
 const RULER_H = 28
 const LANE_H = 56
+const HOUR_MS = 3600000
 
+// DST switch days are 23 or 25 hours long — measure to the next local midnight.
 const dayStartMs = computed(() => props.day.getTime())
-const canvasW = computed(() => DAY_MIN * props.zoom)
+const dayEndMs = computed(() => {
+  const x = new Date(props.day)
+  x.setDate(x.getDate() + 1)
+  return x.getTime()
+})
+const dayMin = computed(() => (dayEndMs.value - dayStartMs.value) / 60000)
+const canvasW = computed(() => dayMin.value * props.zoom)
 const hourW = computed(() => 60 * props.zoom)
+
+// One ruler cell per real hour, labelled with its local clock time: on the
+// autumn switch 02:00 appears twice, in spring 02:00 is skipped.
+const hours = computed(() => {
+  const out = []
+  for (let ms = dayStartMs.value; ms < dayEndMs.value; ms += HOUR_MS) out.push(ms)
+  return out
+})
 const snapMin = computed(() => (props.zoom >= 5 ? 1 : 5))
 
 const { lineLabel, renameLine } = useLineNames()
@@ -47,7 +62,6 @@ async function commitEdit() {
 
 function cancelEdit() { editingLine.value = null }
 
-const hh = (h) => `${String(h).padStart(2, '0')}:00`
 const hhmm = (iso) => {
   const d = new Date(iso)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
@@ -56,12 +70,11 @@ const hhmm = (iso) => {
 function xOf(ms) { return ((ms - dayStartMs.value) / 60000) * props.zoom }
 
 function laneEntries(line) {
-  const dayEnd = dayStartMs.value + DAY_MIN * 60000
   return props.entries.filter((e) => {
     if (e.line !== line) return false
     const s = new Date(e.startUtc).getTime()
     const en = new Date(e.endUtc).getTime()
-    return en > dayStartMs.value && s < dayEnd
+    return en > dayStartMs.value && s < dayEndMs.value
   })
 }
 
@@ -110,7 +123,7 @@ function startMsAt(e, laneEl, line, payload) {
     payload?.effDurationSec, payload?.entryId ?? null)
   if (snapped != null) return snapped
   const min = Math.round(rawMin / snapMin.value) * snapMin.value
-  return dayStartMs.value + Math.min(DAY_MIN, Math.max(0, min)) * 60000
+  return dayStartMs.value + Math.min(dayMin.value, Math.max(0, min)) * 60000
 }
 
 function onDragOver(e, line) {
@@ -246,7 +259,7 @@ function entryTooltip(e) {
     <div ref="scroller" class="scroller" :class="{ grabbing: panning }" @mousedown="onPanStart">
       <div class="canvas" :style="{ width: canvasW + 'px' }">
         <div class="ruler" :style="{ height: RULER_H + 'px' }">
-          <div v-for="h in 24" :key="h" class="hour" :style="{ width: hourW + 'px' }">{{ hh(h - 1) }}</div>
+          <div v-for="ms in hours" :key="ms" class="hour" :style="{ width: hourW + 'px' }">{{ hhmm(ms) }}</div>
         </div>
         <div v-for="l in lanes" :key="l.line" class="lane"
           :style="{ height: LANE_H + 'px', backgroundSize: hourW + 'px 100%' }"

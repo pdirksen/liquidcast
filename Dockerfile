@@ -23,6 +23,11 @@ RUN dotnet publish Liquidcast.Api/Liquidcast.Api.csproj \
 # --- 3. Runtime on the official Liquidsoap image ---
 FROM savonet/liquidsoap:v2.4.5
 USER root
+# tzdata: the stats endpoints resolve the browser's IANA zone (DST-aware); the slim
+# Debian base doesn't guarantee it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tzdata \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /publish ./
 RUN chmod +x /app/Liquidcast.Api

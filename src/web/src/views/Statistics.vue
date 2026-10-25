@@ -10,6 +10,8 @@ import StatsBarChart from '../components/StatsBarChart.vue'
 
 const { t, locale } = useI18n()
 
+// The IANA zone lets the server apply DST per timestamp; tzOffset is its fallback.
+const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 const tzOffset = new Date().getTimezoneOffset()
 
 const listenerRange = ref('month')
@@ -37,7 +39,7 @@ async function loadListeners() {
   loadingListeners.value = true
   try {
     const data = (await api.get('/stats/listeners',
-      { params: { range: listenerRange.value, tzOffset } })).data
+      { params: { range: listenerRange.value, tz, tzOffset } })).data
     if (seq === listenerSeq) listeners.value = data
   } catch { if (seq === listenerSeq) listeners.value = null }
   finally { if (seq === listenerSeq) loadingListeners.value = false }
@@ -47,7 +49,7 @@ async function loadPlays() {
   loadingPlays.value = true
   try {
     const data = (await api.get('/stats/plays',
-      { params: { range: playRange.value, tzOffset } })).data
+      { params: { range: playRange.value, tz, tzOffset } })).data
     if (seq === playSeq) plays.value = data
   } catch { if (seq === playSeq) plays.value = null }
   finally { if (seq === playSeq) loadingPlays.value = false }
